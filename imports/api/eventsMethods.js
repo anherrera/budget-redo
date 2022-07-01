@@ -6,8 +6,6 @@ import {DateTime} from "luxon";
 
 Meteor.methods({
     'events.insert'(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdaysOnly) {
-        console.log(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdaysOnly);
-
         check(title, String);
         check(type, String);
         check(lastDayOfMonth, Boolean);
@@ -30,7 +28,10 @@ Meteor.methods({
                 interval: interval,
                 freq: frequency,
                 byweekday: weekdaysOnly ? [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR] : null,
-                bymonthday: lastDayOfMonth ? -1 : dayOfMonth // -1 for last
+                bymonthday: lastDayOfMonth ? -1 : dayOfMonth, // -1 for last
+                byhour: 0,
+                byminute: 0,
+                bysecond: 0
             }).toString(),
             createdAt: DateTime.now().toMillis(),
             userId: this.userId,

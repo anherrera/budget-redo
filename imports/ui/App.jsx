@@ -17,10 +17,8 @@ const editEvent = (evt) => {
 };
 
 export const App = () => {
-    let evtsFlat = [];
-
-    const [start, setStart] = useState(DateTime.now().toISODate());
-    const [end, setEnd] = useState(DateTime.now().plus({ months: 1 }).toISODate());
+    const [start, setStart] = useState(DateTime.now().startOf('day').toISODate());
+    const [end, setEnd] = useState(DateTime.now().plus({ months: 1 }).endOf('day').toISODate());
 
     const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(amt)
 
@@ -29,34 +27,43 @@ export const App = () => {
 
     const userFilter = user ? { userId: user._id } : {};
 
-    useTracker(() => {
+    const getCurrentEvents = () => {
+        let filteredEvts = [];
         if (!user) return [];
 
         const handler = Meteor.subscribe('events');
         if (!handler.ready()) {
+            console.log("not ready");
             return [];
         }
 
         let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}}).fetch();
 
         let running = 0;
-
         evtsAll.forEach(evt => {
             let rule = RRule.fromString(evt.rule);
-            rule.between(DateTime.fromISO(start).toJSDate(), DateTime.fromISO(end).toJSDate()).forEach((instance, idx) => {
-                running = running + evt.amount;
-                evtsFlat.push({
+            console.log(rule);
+            rule.between(
+                DateTime.fromISO(start).startOf('day').toJSDate(),
+                DateTime.fromISO(end).endOf('day').toJSDate(),
+                true
+            ).forEach((instance, idx) => {
+                running = evt.type === 'bill' ? running - evt.amount : running + evt.amount;
+                filteredEvts.push({
                     ...evt,
                     running: running,
                     listId: evt._id + idx,
                     timestamp: instance.getTime(),
-                    due: instance.toDateString()
+                    due: instance.toLocaleString()
                 })
             })
         });
 
-        evtsFlat.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
-    });
+        filteredEvts.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
+        return filteredEvts;
+    };
+
+    const evtsFlat = useTracker(() => getCurrentEvents());
 
     const columns = [
         {
@@ -75,7 +82,7 @@ export const App = () => {
             type: 'number',
             editable: false,
             sortable: true,
-            valueFormatter: (ts) => DateTime.fromMillis(ts.value).toFormat("M/dd/yy")
+            valueFormatter: (ts) => DateTime.fromMillis(ts.value).toLocaleString()
         },
         {
             field: 'amount',
@@ -118,13 +125,13 @@ export const App = () => {
                     </Grid>
                     <Grid item md={8}>
                         <Box sx={{ height: 400, width: '100%' }}>
-                            <DataGrid columns={columns} rows={evtsFlat} pageSize={10} getRowId={(row) => row.listId} />
+                            <DataGrid columns={columns} rows={evtsFlat} pageSize={30} rowsPerPageOptions={[30]} getRowId={(row) => row.listId} />
                         </Box>
                     </Grid>
 
                     <Grid item md={4}>
                         Stuff here eventually
-
+                        {/*
                         <ul className="events">
                             {evtsFlat.map(evt => (
                                 <Event
@@ -135,6 +142,8 @@ export const App = () => {
                                 />
                             ))}
                         </ul>
+                        */}
+
                     </Grid>
 
 

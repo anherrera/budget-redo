@@ -14,6 +14,15 @@ import {CgInpicture} from "react-icons/all";
 
 export const EventForm = (evtObj) => {
     const formReducer = (state, event) => {
+        if (event.reset) {
+            return {
+                interval: 1,
+                frequency: RRule.MONTHLY,
+                dayOfMonth: 1,
+                lastDayOfMonth: false,
+                weekdaysOnly: false
+            }
+        }
         return {
             ...state,
             [event.name]: event.value
@@ -42,23 +51,24 @@ export const EventForm = (evtObj) => {
         e.preventDefault();
         setSubmitting(true);
 
-        console.log(formData);
-
-        Meteor.call('events.insert', formData.title, formData.type, formData.amount, formData.interval, formData.frequency, formData.dayOfMonth, formData.lastDayOfMonth, formData.weekdaysOnly);
+        Meteor.call('events.insert', formData.title, formData.type, parseFloat(formData.amount), parseInt(formData.interval), formData.frequency, parseInt(formData.dayOfMonth), formData.lastDayOfMonth, formData.weekdaysOnly);
 
         setTimeout(() => {
+            setFormData({
+                reset: true
+            })
             setSubmitting(false);
-        }, 3000)
+        }, 500)
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
                 <Grid item md={2}>
-                    <TextField name="title" onChange={handleChange} value={formData.title || ''} label="title" />
+                    <TextField disabled={submitting} name="title" onChange={handleChange} value={formData.title || ''} label="title" />
                 </Grid>
                 <Grid item md={1}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth disabled={submitting}>
                         <InputLabel id="label-type">type</InputLabel>
                         <Select labelId="label-type" name="type" value={formData.type || ''} onChange={handleChange} label="type">
                             <MenuItem value="bill">Bill due</MenuItem>
@@ -67,13 +77,13 @@ export const EventForm = (evtObj) => {
                     </FormControl>
                 </Grid>
                 <Grid item md={1.25}>
-                    <TextField name="amount" value={formData.amount || '0.00'} type="number" onChange={handleChange} label="amount" />
+                    <TextField disabled={submitting} name="amount" value={formData.amount || '0.00'} type="number" onChange={handleChange} label="amount" />
                 </Grid>
                 <Grid item md={0.75}>
-                    <TextField name="interval" value={formData.interval || 1} type="number" onChange={handleChange} label="every" />
+                    <TextField disabled={submitting} name="interval" value={formData.interval || 1} type="number" onChange={handleChange} label="every" />
                 </Grid>
                 <Grid item md={1.25}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth disabled={submitting}>
                         <InputLabel id="label-frequency">frequency</InputLabel>
                         <Select name="frequency" value={formData.frequency || RRule.MONTHLY} onChange={handleChange} label="frequency">
                             <MenuItem value={RRule.DAILY}>Days</MenuItem>
@@ -84,19 +94,19 @@ export const EventForm = (evtObj) => {
                     </FormControl>
                 </Grid>
                 <Grid item md={1}>
-                    <FormControl>
-                        <TextField name="dayOfMonth" value={formData.dayOfMonth || 1} type="number" onChange={handleChange} label="on the" />
+                    <FormControl disabled={submitting}>
+                        <TextField name="dayOfMonth" value={formData.dayOfMonth || 1} type="number" onChange={handleChange} label="on the" disabled={formData.lastDayOfMonth} />
                         <FormHelperText>-th day</FormHelperText>
                     </FormControl>
                 </Grid>
                 <Grid item md={1.5}>
-                    <FormControlLabel control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth || false} onChange={handleChange} />} label="last day of the month" />
+                    <FormControlLabel disabled={submitting} control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth || false} onChange={handleChange} />} label="last day of the month" />
                 </Grid>
                 <Grid item md={1.5}>
-                    <FormControlLabel control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly || false} onChange={handleChange} />} label={"only on weekdays"} />
+                    <FormControlLabel disabled={submitting} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly || false} onChange={handleChange} />} label={"only on weekdays"} />
                 </Grid>
                 <Grid item md={1}>
-                    <Button variant="contained" type="submit">Add Event</Button>
+                    <Button variant="contained" type="submit" disabled={submitting}>Add Event</Button>
                 </Grid>
             </Grid>
         </form>
