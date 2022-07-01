@@ -1,88 +1,104 @@
-import React, {useState} from 'react';
+import React, {useReducer, useState} from 'react';
 import {RRule} from 'rrule'
 import {
     Button,
     Checkbox,
     FormControl,
     FormControlLabel,
-    FormGroup, FormHelperText,
+    FormGroup, FormHelperText, Grid,
     InputLabel,
     MenuItem, Select, TextField,
 } from "@mui/material";
 import {CgInpicture} from "react-icons/all";
 
-export const EventForm = ({ event }) => {
-    const [title, setTitle] = useState(event.title);
-    const [eventType, setEventType] = useState(event.type);
-    const [amount, setAmount] = useState(event.amount);
-    const [interval, setEventInterval] = useState(event.rule ? event.rule.interval : 1);
-    const [frequency, setFrequency] = useState(event.rule ? event.rule.freq : RRule.MONTHLY);
-    const [dayOfMonth, setDayOfMonth] = useState(event.rule ? event.rule.bymonthday : 1);
-    const [weekdaysOnly, setWeekdaysOnly] = useState(event.rule ? event.rule.byweekday != null : false);
+
+export const EventForm = (evtObj) => {
+    const formReducer = (state, event) => {
+        return {
+            ...state,
+            [event.name]: event.value
+        }
+    }
+
+    const [formData, setFormData] = useReducer(formReducer, {
+        interval: 1,
+        frequency: RRule.MONTHLY,
+        dayOfMonth: 1,
+        lastDayOfMonth: false,
+        weekdaysOnly: false
+    });
+    const [submitting, setSubmitting] = useState(false);
+
+
+    const handleChange = event => {
+        const isCheckbox = event.target.type === 'checkbox';
+        setFormData({
+            name: event.target.name,
+            value: isCheckbox ? event.target.checked : event.target.value,
+        });
+    }
 
     const handleSubmit = e => {
         e.preventDefault();
+        setSubmitting(true);
 
-        Meteor.call('events.insert', title, eventType, amount, interval, frequency, dayOfMonth, weekdaysOnly);
+        console.log(formData);
 
-        setTitle("");
-        setEventType("");
-        setAmount(0);
-        setFrequency(RRule.MONTHLY);
-        setDayOfMonth(1);
-        setWeekdaysOnly(false);
+        Meteor.call('events.insert', formData.title, formData.type, formData.amount, formData.interval, formData.frequency, formData.dayOfMonth, formData.lastDayOfMonth, formData.weekdaysOnly);
+
+        setTimeout(() => {
+            setSubmitting(false);
+        }, 3000)
     };
 
     return (
-        <form className="event-form" onSubmit={handleSubmit}>
-
-            <FormControl>
-                <InputLabel>title</InputLabel>
-                <TextField value={title} onChange={(e)=> setTitle(e.target.value)} />
-            </FormControl>
-
-            <FormControl>
-                <InputLabel>type</InputLabel>
-                <Select value={eventType} onChange={(e) => setEventType(e.target.value)}>
-                    <MenuItem vaue=""></MenuItem>
-                    <MenuItem value="bill">Bill due</MenuItem>
-                    <MenuItem value="income">Income</MenuItem>
-                </Select>
-            </FormControl>
-
-            <FormControl>
-                <InputLabel>amount</InputLabel>
-                <TextField value={amount} type="number" />
-            </FormControl>
-
-            <FormControl>
-                <InputLabel>every</InputLabel>
-                <Select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
-                    <MenuItem value={RRule.DAILY}>Days</MenuItem>
-                    <MenuItem value={RRule.WEEKLY}>Weeks</MenuItem>
-                    <MenuItem value={RRule.DAILY}>Months</MenuItem>
-                    <MenuItem value={RRule.YEARLY}>Years</MenuItem>
-                </Select>
-            </FormControl>
-            
-            <FormControl>
-                <InputLabel>day of the month</InputLabel>
-                <TextField value={dayOfMonth} type="number" />
-            </FormControl>
-
-            <FormControl>
-                <FormControlLabel control={<Checkbox checked={dayOfMonth === -1} />} label="last day of the month" />
-
-                <FormHelperText>disables day of month</FormHelperText>
-            </FormControl>
-
-
-            <FormControl>
-                <InputLabel>only on weekdays</InputLabel>
-                <Checkbox checked={weekdaysOnly} />
-            </FormControl>
-
-            <Button variant="contained" type="submit">Add Event</Button>
+        <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+                <Grid item md={2}>
+                    <TextField name="title" onChange={handleChange} value={formData.title || ''} label="title" />
+                </Grid>
+                <Grid item md={1}>
+                    <FormControl fullWidth>
+                        <InputLabel id="label-type">type</InputLabel>
+                        <Select labelId="label-type" name="type" value={formData.type || ''} onChange={handleChange} label="type">
+                            <MenuItem value="bill">Bill due</MenuItem>
+                            <MenuItem value="income">Income</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item md={1.25}>
+                    <TextField name="amount" value={formData.amount || '0.00'} type="number" onChange={handleChange} label="amount" />
+                </Grid>
+                <Grid item md={0.75}>
+                    <TextField name="interval" value={formData.interval || 1} type="number" onChange={handleChange} label="every" />
+                </Grid>
+                <Grid item md={1.25}>
+                    <FormControl fullWidth>
+                        <InputLabel id="label-frequency">frequency</InputLabel>
+                        <Select name="frequency" value={formData.frequency || RRule.MONTHLY} onChange={handleChange} label="frequency">
+                            <MenuItem value={RRule.DAILY}>Days</MenuItem>
+                            <MenuItem value={RRule.WEEKLY}>Weeks</MenuItem>
+                            <MenuItem value={RRule.MONTHLY}>Months</MenuItem>
+                            <MenuItem value={RRule.YEARLY}>Years</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item md={1}>
+                    <FormControl>
+                        <TextField name="dayOfMonth" value={formData.dayOfMonth || 1} type="number" onChange={handleChange} label="on the" />
+                        <FormHelperText>-th day</FormHelperText>
+                    </FormControl>
+                </Grid>
+                <Grid item md={1.5}>
+                    <FormControlLabel control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth || false} onChange={handleChange} />} label="last day of the month" />
+                </Grid>
+                <Grid item md={1.5}>
+                    <FormControlLabel control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly || false} onChange={handleChange} />} label={"only on weekdays"} />
+                </Grid>
+                <Grid item md={1}>
+                    <Button variant="contained" type="submit">Add Event</Button>
+                </Grid>
+            </Grid>
         </form>
     );
 };

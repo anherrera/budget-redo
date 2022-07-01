@@ -5,8 +5,13 @@ import RRule from "rrule";
 import {DateTime} from "luxon";
 
 Meteor.methods({
-    'events.insert'(title, eventType, amount, interval, frequency, dayOfMonth, weekdaysOnly) {
+    'events.insert'(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdaysOnly) {
+        console.log(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdaysOnly);
+
         check(title, String);
+        check(type, String);
+        check(lastDayOfMonth, Boolean);
+        check(weekdaysOnly, Boolean);
 
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
@@ -14,15 +19,20 @@ Meteor.methods({
 
         EventsCollection.insert({
             title: title,
-            type: eventType,
-            amount: amount,
+            type: type,
+            amount: parseFloat(amount),
+            interval: interval,
+            frequency: frequency,
+            dayOfMonth: dayOfMonth,
+            lastDayOfMonth: lastDayOfMonth,
+            weekdaysOnly: weekdaysOnly,
             rule: new RRule({
                 interval: interval,
                 freq: frequency,
                 byweekday: weekdaysOnly ? [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR] : null,
-                bymonthday: dayOfMonth // -1 for last
+                bymonthday: lastDayOfMonth ? -1 : dayOfMonth // -1 for last
             }).toString(),
-            createdAt: DateTime.now().toISODate(),
+            createdAt: DateTime.now().toMillis(),
             userId: this.userId,
         })
     },
