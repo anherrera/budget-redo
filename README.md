@@ -1,4 +1,4 @@
-# budget-redux
+# budget-redo
 
 meteor.js app. 
 
