@@ -14,6 +14,12 @@ then
 meteor npm install
 ```
 
+then 
+
+```
+meteor
+```
+
 I think? 
 
 
