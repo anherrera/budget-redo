@@ -12,9 +12,6 @@ import {DataGrid} from "@mui/x-data-grid";
 import {Event} from "./Event";
 
 const deleteEvent = ({ _id }) => Meteor.call('events.remove', _id);
-const editEvent = (evt) => {
-
-};
 
 export const App = () => {
     const [start, setStart] = useState(DateTime.now().startOf('day').toISODate());
@@ -131,18 +128,17 @@ export const App = () => {
 
                     <Grid item md={4}>
                         Stuff here eventually
-                        {/*
+
                         <ul className="events">
                             {evtsFlat.map(evt => (
                                 <Event
                                     key={evt.listId}
                                     evt={evt}
-                                    onEditClick={editEvent}
                                     onDeleteClick={deleteEvent}
                                 />
                             ))}
                         </ul>
-                        */}
+
 
                     </Grid>
 
