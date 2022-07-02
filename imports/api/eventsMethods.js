@@ -5,12 +5,11 @@ import RRule from "rrule";
 import {DateTime} from "luxon";
 
 Meteor.methods({
-    'events.insert'(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdaysOnly) {
-        check(title, String);
-        check(type, String);
-        check(lastDayOfMonth, Boolean);
-        check(weekdaysOnly, Boolean);
-        check(amount, Number);
+    'events.insert'(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdays) {
+        //check(title, String);
+        //check(type, String);
+        //check(lastDayOfMonth, Boolean);
+        //check(amount, Number);
 
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
@@ -24,22 +23,13 @@ Meteor.methods({
             frequency: frequency,
             dayOfMonth: dayOfMonth,
             lastDayOfMonth: lastDayOfMonth,
-            weekdaysOnly: weekdaysOnly,
-            rule: new RRule({
-                interval: interval,
-                freq: frequency,
-                byweekday: weekdaysOnly ? [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR] : null,
-                bymonthday: lastDayOfMonth ? -1 : dayOfMonth, // -1 for last
-                byhour: 0,
-                byminute: 0,
-                bysecond: 0
-            }).toString(),
-            createdAt: DateTime.now().toMillis(),
+            weekdays: weekdays,
+            createdAt: DateTime.now().setZone('UTC').toMillis(),
             userId: this.userId,
         })
     },
 
-    async 'events.edit'(event) {
+    async 'events.edit'(evt) {
         // probably need to conditionally validate this
         // check(event.title, String);
         // check(event.type, String);
@@ -50,30 +40,30 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        const foundEvent = await EventsCollection.findOne({ _id: event._id, userId: this.userId });
+        const foundEvent = await EventsCollection.findOne({ _id: evt._id, userId: this.userId });
 
         if (!foundEvent) {
             throw new Meteor.Error('Not found.');
         }
 
-        if (event.rule) {
-            event.rule = new RRule({
-                interval: event.interval,
-                freq: event.frequency,
-                byweekday: event.weekdaysOnly ? [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR] : null,
-                bymonthday: event.lastDayOfMonth ? -1 : event.dayOfMonth,
+        if (evt.rule) {
+            evt.rule = new RRule({
+                interval: evt.interval,
+                freq: evt.frequency,
+                byweekday: evt.weekdaysOnly ? [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR] : null,
+                bymonthday: evt.lastDayOfMonth ? -1 : evt.dayOfMonth,
                 byhour: 0,
                 byminute: 0,
                 bysecond: 0
             }).toString();
         }
 
-        if (event.amount) {
-            event.amount = parseFloat(event.amount).toFixed(2);
+        if (evt.amount) {
+            evt.amount = parseFloat(evt.amount).toFixed(2);
         }
 
         // slow, see difference in object and update individual keys. or send only keys that need upating from front ned
-        return await EventsCollection.update({ _id: event._id, userId: this.userId }, event)
+        return await EventsCollection.update({ _id: evt._id, userId: this.userId }, evt)
 
     },
 

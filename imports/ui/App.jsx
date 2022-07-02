@@ -30,28 +30,39 @@ export const App = () => {
 
         const handler = Meteor.subscribe('events');
         if (!handler.ready()) {
-            console.log("not ready");
-            return [];
+            return filteredEvts;
         }
 
         let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}}).fetch();
 
-        let running = 0;
+        let running = 0.00;
         evtsAll.forEach(evt => {
-            let rule = RRule.fromString(evt.rule);
-            console.log(rule);
-            rule.between(
-                DateTime.fromISO(start).startOf('day').toJSDate(),
-                DateTime.fromISO(end).endOf('day').toJSDate(),
-                true
-            ).forEach((instance, idx) => {
+            let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
+            let betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
+
+            let rule = new RRule({
+                wkst: RRule.SU,
+                interval: evt.interval,
+                freq: evt.frequency,
+                byweekday: evt.weekdays,
+                bysetpos: evt.dayOfMonth,
+                byhour: 0,
+                byminute: 0,
+                bysecond: 0
+            });
+
+            rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
+
+                let dt = DateTime.fromJSDate(instance).setZone('utc');
+
                 running = evt.type === 'bill' ? running - evt.amount : running + evt.amount;
                 filteredEvts.push({
                     ...evt,
                     running: running,
                     listId: evt._id + idx,
-                    timestamp: instance.getTime(),
-                    due: instance.toLocaleString()
+                    timestamp: dt.toMillis(),
+                    due: dt.toLocaleString(),
+                    dueHuge: dt.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
                 })
             })
         });
@@ -99,6 +110,8 @@ export const App = () => {
             field: 'actions',
             headerName: 'Actions',
             sortable: false,
+            editable: false,
+            renderCell: (actions) => <Edit evt={actions.row} onEditClick={editEvent} onDeleteClick={deleteEvent} />
         }
     ];
 
@@ -128,18 +141,6 @@ export const App = () => {
 
                     <Grid item md={4}>
                         Stuff here eventually
-
-                        <ul className="events">
-                            {evtsFlat.map(evt => (
-                                <Event
-                                    key={evt.listId}
-                                    evt={evt}
-                                    onDeleteClick={deleteEvent}
-                                />
-                            ))}
-                        </ul>
-
-
                     </Grid>
 
 
