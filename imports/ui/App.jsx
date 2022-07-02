@@ -36,7 +36,6 @@ export const App = () => {
 
         let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}}).fetch();
 
-        let running = 0;
         evtsAll.forEach(evt => {
             let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
             let betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
@@ -55,25 +54,9 @@ export const App = () => {
             });
 
             rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
-
                 let displayTime = DateTime.fromJSDate(instance).setZone('utc');
-
-                console.log(evt.type === 'bill');
-                console.log(parseFloat(evt.amount));
-
-                if (evt.type === 'bill') {
-                    console.log(running, 'minus', parseFloat(evt.amount), 'equals');
-                    running -= parseFloat(evt.amount);
-                    console.log(running);
-                } else {
-                    console.log(running, 'plus', parseFloat(evt.amount), 'equals');
-                    running += parseFloat(evt.amount);
-                    console.log(running);
-                }
-
                 filteredEvts.push({
                     ...evt,
-                    running: running,
                     listId: evt._id + idx,
                     timestamp: displayTime.toMillis(),
                     due: displayTime.toLocaleString(),
@@ -83,6 +66,17 @@ export const App = () => {
         });
 
         filteredEvts.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
+
+        let running = 0;
+        filteredEvts.map((evt) => {
+            if (evt.type === 'bill') {
+                running -= parseFloat(evt.amount);
+            } else {
+                running += parseFloat(evt.amount);
+            }
+            evt.running = running;
+        })
+
         return filteredEvts;
     };
 
