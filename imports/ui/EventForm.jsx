@@ -14,6 +14,10 @@ import {
 
 export const EventForm = () => {
     const formReducer = (state, event) => {
+        if (typeof state.weekdays === "string") {
+            state.weekdays = state.weekdays.split(",");
+        }
+
         if (event.reset) {
             return {
                 type: 'bill',
@@ -53,19 +57,12 @@ export const EventForm = () => {
 
     const handleSubmit = e => {
         e.preventDefault();
+
+        formData.weekdays = formData.weekdays.toString();
+
         setSubmitting(true);
 
-        console.log(formData.type);
-
-        Meteor.call('events.insert',
-            formData.title,
-            formData.type,
-            parseFloat(formData.amount).toFixed(2),
-            parseInt(formData.interval),
-            formData.frequency,
-            parseInt(formData.dayOfMonth),
-            formData.lastDayOfMonth,
-            formData.weekdays);
+        Meteor.call('events.insert', formData);
 
         setTimeout(() => {
             setFormData({
@@ -115,21 +112,22 @@ export const EventForm = () => {
                         </FormControl>
                     </Grid>
                     <Grid item md={1.5}>
+                        <FormControlLabel disabled={submitting} control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth || false} onChange={handleChange} />} label="last day of the month" />
+                    </Grid>
+                    <Grid item md={1.5}>
                         <FormControl disabled={submitting} fullWidth>
                             <InputLabel id="weekdays">weekdays</InputLabel>
                             <Select name="weekdays" multiple value={formData.weekdays || []} onChange={handleChange} label="weekdays">
-                                <MenuItem value={RRule.SU}>Sunday</MenuItem>
-                                <MenuItem value={RRule.MO}>Monday</MenuItem>
-                                <MenuItem value={RRule.TU}>Tuesday</MenuItem>
-                                <MenuItem value={RRule.WE}>Wednesday</MenuItem>
-                                <MenuItem value={RRule.TH}>Thursday</MenuItem>
-                                <MenuItem value={RRule.FR}>Friday</MenuItem>
-                                <MenuItem value={RRule.SA}>Saturday</MenuItem>
+                                <MenuItem value={RRule.SU.toString()}>Sunday</MenuItem>
+                                <MenuItem value={RRule.MO.toString()}>Monday</MenuItem>
+                                <MenuItem value={RRule.TU.toString()}>Tuesday</MenuItem>
+                                <MenuItem value={RRule.WE.toString()}>Wednesday</MenuItem>
+                                <MenuItem value={RRule.TH.toString()}>Thursday</MenuItem>
+                                <MenuItem value={RRule.FR.toString()}>Friday</MenuItem>
+                                <MenuItem value={RRule.SA.toString()}>Saturday</MenuItem>
                             </Select>
+                            <FormHelperText>select possible days</FormHelperText>
                         </FormControl>
-                    </Grid>
-                    <Grid item md={1.5}>
-                        <FormControlLabel disabled={submitting} control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth || false} onChange={handleChange} />} label="last day of the month" />
                     </Grid>
                     <Grid item md={1}>
                         <Button variant="contained" type="submit" disabled={submitting}>Add</Button>

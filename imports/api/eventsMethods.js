@@ -5,7 +5,7 @@ import RRule from "rrule";
 import {DateTime} from "luxon";
 
 Meteor.methods({
-    'events.insert'(title, type, amount, interval, frequency, dayOfMonth, lastDayOfMonth, weekdays) {
+    'events.insert'(evt) {
         //check(title, String);
         //check(type, String);
         //check(lastDayOfMonth, Boolean);
@@ -15,21 +15,23 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        EventsCollection.insert({
-            title: title,
-            type: type,
-            amount: parseFloat(amount).toFixed(2),
-            interval: interval,
-            frequency: frequency,
-            dayOfMonth: dayOfMonth,
-            lastDayOfMonth: lastDayOfMonth,
-            weekdays: weekdays,
-            createdAt: DateTime.now().setZone('UTC').toMillis(),
-            userId: this.userId,
-        })
+        if (evt.amount) {
+            evt.amount = parseFloat(evt.amount).toFixed(2);
+        }
+
+        if (evt.weekdays) {
+            evt.weekdays = evt.weekdays.toString();
+        }
+
+        evt.createdAt = DateTime.now().toMillis();
+        evt.userId = this.userId;
+
+        EventsCollection.insert({...evt})
     },
 
     async 'events.edit'(evt) {
+        let evtUpdate = evt;
+
         // probably need to conditionally validate this
         // check(event.title, String);
         // check(event.type, String);
@@ -40,30 +42,30 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        const foundEvent = await EventsCollection.findOne({ _id: evt._id, userId: this.userId });
+        const foundEvent = await EventsCollection.findOne({ _id: evtUpdate._id, userId: this.userId });
 
         if (!foundEvent) {
             throw new Meteor.Error('Not found.');
         }
 
-        if (evt.rule) {
-            evt.rule = new RRule({
-                interval: evt.interval,
-                freq: evt.frequency,
-                byweekday: evt.weekdaysOnly ? [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR] : null,
-                bymonthday: evt.lastDayOfMonth ? -1 : evt.dayOfMonth,
-                byhour: 0,
-                byminute: 0,
-                bysecond: 0
-            }).toString();
+        if (evtUpdate.amount) {
+            evtUpdate.amount = parseFloat(evt.amount).toFixed(2);
         }
 
-        if (evt.amount) {
-            evt.amount = parseFloat(evt.amount).toFixed(2);
+        if (evtUpdate.weekdays) {
+            evtUpdate.weekdays = evt.weekdays.toString();
         }
+
+        evtUpdate.updatedAt = DateTime.now().toMillis();
+
+        delete evtUpdate.running;
+        delete evtUpdate.timestamp;
+        delete evtUpdate.due;
+        delete evtUpdate.dueHuge;
+        delete evtUpdate.listId;
 
         // slow, see difference in object and update individual keys. or send only keys that need upating from front ned
-        return await EventsCollection.update({ _id: evt._id, userId: this.userId }, evt)
+        return await EventsCollection.update(evtUpdate._id, { $set: {...evtUpdate}})
 
     },
 
