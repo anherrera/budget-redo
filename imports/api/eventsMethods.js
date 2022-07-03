@@ -6,8 +6,8 @@ import {DateTime} from "luxon";
 
 Meteor.methods({
     'events.insert'(evt) {
-        //check(title, String);
-        //check(type, String);
+        //check(evt.title, String);
+        //check(evt.type, String);
         //check(lastDayOfMonth, Boolean);
         //check(amount, Number);
 

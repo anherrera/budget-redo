@@ -21,11 +21,7 @@ export const EventForm = () => {
         if (event.reset) {
             return {
                 type: 'bill',
-                amount: 0,
-                interval: 1,
-                frequency: RRule.MONTHLY,
-                dayOfMonth: 1,
-                lastDayOfMonth: false,
+                recurring: false,
                 weekdays: []
             }
         }

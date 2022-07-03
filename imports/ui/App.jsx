@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {useTracker} from 'meteor/react-meteor-data';
 import {EventsCollection} from '/imports/db/EventsCollection';
-import {EventForm} from './EventForm';
 import {DateRangeForm} from "./DateRangeForm";
 import {LoginForm} from "./LoginForm";
 import {DateTime} from "luxon";
@@ -11,6 +10,7 @@ import {Box, Container, Grid} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
 import {Edit} from "./event/Edit";
 import {Due} from "./event/Due";
+import EditEventBtnForm from "./EditEventBtnForm";
 
 const deleteEvent = ({_id}) => Meteor.call('events.remove', _id);
 
@@ -22,6 +22,20 @@ export const App = () => {
 
     const user = useTracker(() => Meteor.user());
     const logout = () => Meteor.logout();
+
+    const defaultEvent = {
+        title: '',
+        type: 'bill',
+        amount: '',
+        startdate: DateTime.now().toISODate(),
+        recurring: false,
+        interval: 1,
+        frequency: RRule.MONTHLY,
+        dayOfMonth: 1,
+        lastDayOfMonth: false,
+        weekdays: [],
+        until: '',
+    }
 
     const userFilter = user ? {userId: user._id} : {};
 
@@ -40,23 +54,40 @@ export const App = () => {
             let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
             let betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
 
-            let weekdaysArray = evt.weekdays !== "" ? evt.weekdays.split(",").map((w) => Weekday.fromStr(w)) : [];
+            let weekdaysArray = [];
+            if (evt.weekdays) {
+                weekdaysArray = evt.weekdays !== "" ? evt.weekdays.split(",").map((w) => Weekday.fromStr(w)) : [];
+            }
 
-            let rule = new RRule({
-                wkst: RRule.SU,
-                interval: evt.interval,
-                freq: evt.frequency,
-                byweekday: weekdaysArray,
-                bysetpos: evt.lastDayOfMonth ? -1 : evt.dayOfMonth,
-                byhour: 0,
-                byminute: 0,
-                bysecond: 0
-            });
+            let rule;
+            if (evt.recurring) {
+                rule = new RRule({
+                    wkst: RRule.SU,
+                    interval: evt.interval,
+                    freq: evt.frequency,
+                    byweekday: weekdaysArray,
+                    bysetpos: evt.lastDayOfMonth ? -1 : evt.dayOfMonth,
+                    byhour: 0,
+                    byminute: 0,
+                    bysecond: 0,
+                });
+                if (evt.until) {
+                    rule.options.until = DateTime.fromISO(evt.until).toJSDate();
+                }
+            } else {
+                rule = new RRule({
+                    wkst: RRule.SU,
+                    interval: RRule.DAILY,
+                    dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
+                    count: 1
+                });
+            }
 
             rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
                 let displayTime = DateTime.fromJSDate(instance).setZone('utc');
                 filteredEvts.push({
                     ...evt,
+                    weekdays: weekdaysArray,
                     listId: evt._id + idx,
                     timestamp: displayTime.toMillis(),
                     due: displayTime.toLocaleString(),
@@ -147,7 +178,7 @@ export const App = () => {
                             />
                         </Grid>
                         <Grid item md={12}>
-                            <EventForm/>
+                            <EditEventBtnForm event={defaultEvent} />
                         </Grid>
                         <Grid item md={8}>
                             <Box sx={{height: 700, width: '100%'}}>
