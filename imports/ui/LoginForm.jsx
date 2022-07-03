@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import React, { useState } from 'react';
 import { LoginWithGithub } from "./LoginWithGithub";
+import {Button, Container, FormControl, InputLabel, TextField} from "@mui/material";
 
 export const LoginForm = () => {
     const [username, setUsername] = useState('');
@@ -13,37 +14,39 @@ export const LoginForm = () => {
     };
 
     return (
-        <form onSubmit={submit} className="login-form">
+        <Container spacing={2}>
+            <form onSubmit={submit} className="login-form">
 
-            <LoginWithGithub />
+                <LoginWithGithub />
 
-            <div>
-                <label htmlFor="username">Username</label>
+                <FormControl margin="normal">
+                    <InputLabel htmlFor="username">Username</InputLabel>
 
-                <input
-                    type="text"
-                    placeholder="Username"
-                    name="username"
-                    required
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-            </div>
+                    <TextField
+                        type="text"
+                        placeholder="Username"
+                        name="username"
+                        required
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                </FormControl>
 
-            <div>
-                <label htmlFor="password">Password</label>
+                <FormControl margin="normal">
+                    <InputLabel htmlFor="password">Password</InputLabel>
 
-                <input
-                    type="password"
-                    placeholder="Password"
-                    name="password"
-                    required
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-            </div>
+                    <TextField
+                        type="password"
+                        placeholder="Password"
+                        name="password"
+                        required
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </FormControl>
 
-            <div>
-                <button type="submit">Log In</button>
-            </div>
-        </form>
+                <FormControl margin="normal">
+                    <Button type="submit" variant="contained" color="secondary" sx={{padding: "10"}}>Log In</Button>
+                </FormControl>
+            </form>
+        </Container>
     );
 };
