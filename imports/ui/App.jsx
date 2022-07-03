@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useTracker} from 'meteor/react-meteor-data';
-import {EventsCollection} from '/imports/db/EventsCollection';
+import {EventsCollection} from '../db/EventsCollection';
 import {DateRangeForm} from "./DateRangeForm";
 import {LoginForm} from "./LoginForm";
 import {DateTime} from "luxon";

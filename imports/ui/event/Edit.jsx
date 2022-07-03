@@ -1,6 +1,6 @@
-import {FaPencilAlt, MdOutlineCancel} from "react-icons/all";
+import {MdOutlineCancel} from "react-icons/all";
 
-import React, {useState} from 'react';
+import React from 'react';
 import {Container} from "@mui/material";
 import EditEventBtnForm from "../EditEventBtnForm";
 

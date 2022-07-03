@@ -5,10 +5,8 @@ import {
     Button, Checkbox, Container,
     Dialog,
     DialogTitle,
-    FormControl, FormControlLabel, FormHelperText, IconButton, InputAdornment, InputLabel, MenuItem, Select, TextField
+    FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField
 } from "@mui/material";
-import {DateTime} from "luxon";
-import {ClearOutlined} from "@mui/icons-material";
 
 const EditEventButton = ({event}) => {
 

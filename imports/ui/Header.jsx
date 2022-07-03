@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {MdLogout} from "react-icons/all";
-import {AppBar, Box, Button, Container, Toolbar, Typography} from "@mui/material";
+import {AppBar, Box, Button, Toolbar, Typography} from "@mui/material";
 
 export const Header = ({ user, logout }) => {
     return (
