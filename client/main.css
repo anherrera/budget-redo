@@ -26,3 +26,17 @@ body {
     border: 1px solid lightgray;
     padding: 50px;
 }
+
+input[type="date"]:in-range::-webkit-datetime-edit-year-field,
+input[type="date"]:in-range::-webkit-datetime-edit-month-field,
+input[type="date"]:in-range::-webkit-datetime-edit-day-field,
+input[type="date"]:in-range::-webkit-datetime-edit-text {
+    color: transparent;
+}
+
+input[type="date"]:disabled::-webkit-datetime-edit-year-field,
+input[type="date"]:disabled::-webkit-datetime-edit-month-field,
+input[type="date"]:disabled::-webkit-datetime-edit-day-field,
+input[type="date"]:disabled::-webkit-datetime-edit-text {
+    color: transparent;
+}

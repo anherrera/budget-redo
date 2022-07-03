@@ -2,14 +2,15 @@ import React, {useReducer, useState} from 'react';
 import {RRule} from 'rrule'
 import {FaPencilAlt} from "react-icons/all";
 import {
+    Box,
     Button, Checkbox, Container,
     Dialog,
     DialogTitle,
-    FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField
+    FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField, Tooltip
 } from "@mui/material";
+import {Add} from "@mui/icons-material";
 
 const EditEventButton = ({event}) => {
-
     const [isEditing, setEditing] = useState(false);
     const [resetEvent, setResetEvent] = useState(event);
     const [submitting, setSubmitting] = useState(false);
@@ -47,13 +48,13 @@ const EditEventButton = ({event}) => {
         setSubmitting(true);
         try {
             if (isEditingEvent) {
+                console.log(formData);
                 await Meteor.call('events.edit', formData);
             } else {
-                console.log(formData);
                 await Meteor.call('events.insert', formData);
             }
             setSubmitting(false);
-            setResetEvent(event)
+            setResetEvent(formData)
             setEditing(false);
         } catch (err) {
             console.error(err);
@@ -64,13 +65,18 @@ const EditEventButton = ({event}) => {
 
     return (
         <>
-            {isEditingEvent ? (
-                <button onClick={toggleEditing}>
-                    <FaPencilAlt/>
-                </button>
-            ) : (
-                <Button variant="contained" color="secondary" onClick={toggleEditing}>Add New Item</Button>
-            )}
+            <Box sx={{display: "flex", justifyContent: "right"}}>
+                {isEditingEvent ? (
+                    <Tooltip placement="top" arrow title="Edit item">
+                        <Button variant="contained" color="secondary" onClick={toggleEditing}>
+                            <FaPencilAlt/>
+                        </Button>
+                    </Tooltip>
+                ) : (
+                    <Button variant="contained" color="secondary" onClick={toggleEditing} endIcon={<Add />}>Add New Item</Button>
+                )}
+            </Box>
+
             <Dialog open={isEditing} onClose={toggleEditing}>
 
                 <DialogTitle>{isEditingEvent ? `Editing ${event.title}` : 'Add Item'}</DialogTitle>
@@ -89,13 +95,13 @@ const EditEventButton = ({event}) => {
                         </FormControl>
                         <TextField disabled={submitting} name="amount" value={formData.amount} type="number"
                                    onChange={handleChange} label="amount"/>
-                        <TextField disabled={submitting || formData.recurring} className="half" variant="filled"
-                                   label="on" type="date" name="startdate" value={formData.startdate}
+                        <TextField disabled={submitting} className="half" variant="filled"
+                                   label={formData.recurring ? 'starting on' : 'on'} type="date" name="startdate" value={formData.startdate}
                                    onChange={handleChange}/>
 
                         <FormControlLabel control={<Checkbox disabled={submitting} className="half" name="recurring"
                                                              checked={formData.recurring} onChange={handleChange}/>}
-                                          label="or - recurring item?"/>
+                                          label="recurring item?"/>
 
                         <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
                                    value={formData.interval} type="number" onChange={handleChange} label="every"/>
@@ -118,8 +124,8 @@ const EditEventButton = ({event}) => {
                         <FormControlLabel className="half" disabled={submitting || !formData.recurring}
                                           control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth}
                                                              onChange={handleChange}/>} label="last day of the month"/>
-                        <FormControl className="half" disabled={submitting || !formData.recurring}>
-                            <InputLabel id="weekdays">weekdays</InputLabel>
+                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly}>
+                            <InputLabel id="weekdays">only falls on</InputLabel>
                             <Select name="weekdays" multiple value={formData.weekdays} onChange={handleChange}
                                     label="weekdays">
                                 <MenuItem value={RRule.SU.toString()}>Sunday</MenuItem>
@@ -130,10 +136,11 @@ const EditEventButton = ({event}) => {
                                 <MenuItem value={RRule.FR.toString()}>Friday</MenuItem>
                                 <MenuItem value={RRule.SA.toString()}>Saturday</MenuItem>
                             </Select>
-                            <FormHelperText>select M-F if it only occurs on weekdays</FormHelperText>
                         </FormControl>
+                        <FormControlLabel disabled={submitting || !formData.recurring} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label="only falls M-F" />
                         <TextField className="half"
                                    name="until" variant="filled" value={formData.until} label="until" type="date"
+                                   placeholder=""
                                    onChange={handleChange}
                                    disabled={submitting || !formData.recurring}
                         />

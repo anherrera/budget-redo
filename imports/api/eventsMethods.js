@@ -1,8 +1,40 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { EventsCollection } from '../db/EventsCollection';
-import RRule from "rrule";
 import {DateTime} from "luxon";
+import {RRule} from "rrule";
+
+const standardizeEvent = (evt, userId) => {
+    let evtObj = evt;
+
+    delete evtObj.running;
+    delete evtObj.timestamp;
+    delete evtObj.due;
+    delete evtObj.dueHuge;
+    delete evtObj.listId;
+
+    if (evt.amount) {
+        evtObj.amount = parseFloat(evt.amount).toFixed(2);
+    }
+
+    if (evt._id) {
+        evtObj.updatedAt = DateTime.now().toMillis();
+        delete evtObj.createdAt;
+    } else {
+        evtObj.createdAt = DateTime.now().toMillis();
+    }
+    evtObj.userId = userId;
+
+    if (evt.weekdaysOnly === true) {
+        evtObj.weekdays = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR].toString();
+    } else {
+        if (evt.weekdays) {
+            evtObj.weekdays = evt.weekdays.toString();
+        }
+    }
+
+    return evtObj;
+}
 
 Meteor.methods({
     'events.insert'(evt) {
@@ -15,23 +47,10 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        if (evt.amount) {
-            evt.amount = parseFloat(evt.amount).toFixed(2);
-        }
-
-        if (evt.weekdays) {
-            evt.weekdays = evt.weekdays.toString();
-        }
-
-        evt.createdAt = DateTime.now().toMillis();
-        evt.userId = this.userId;
-
-        EventsCollection.insert({...evt})
+        EventsCollection.insert({...standardizeEvent(evt, this.userId)})
     },
 
     async 'events.edit'(evt) {
-        let evtUpdate = evt;
-
         // probably need to conditionally validate this
         // check(event.title, String);
         // check(event.type, String);
@@ -42,30 +61,16 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        const foundEvent = await EventsCollection.findOne({ _id: evtUpdate._id, userId: this.userId });
+        const foundEvent = await EventsCollection.findOne({ _id: evt._id, userId: this.userId });
 
         if (!foundEvent) {
             throw new Meteor.Error('Not found.');
         }
 
-        if (evtUpdate.amount) {
-            evtUpdate.amount = parseFloat(evt.amount).toFixed(2);
-        }
+        let evtUpdate = standardizeEvent(evt);
 
-        if (evtUpdate.weekdays) {
-            evtUpdate.weekdays = evt.weekdays.toString();
-        }
-
-        evtUpdate.updatedAt = DateTime.now().toMillis();
-
-        delete evtUpdate.running;
-        delete evtUpdate.timestamp;
-        delete evtUpdate.due;
-        delete evtUpdate.dueHuge;
-        delete evtUpdate.listId;
-
-        // slow, see difference in object and update individual keys. or send only keys that need upating from front ned
-        return await EventsCollection.update(evtUpdate._id, { $set: {...evtUpdate}})
+        // slow, see difference in object and update individual keys. or send only keys that need updating from front ned
+        return await EventsCollection.update(evt._id, { $set: {...evtUpdate}})
 
     },
 
