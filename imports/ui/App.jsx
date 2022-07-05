@@ -118,7 +118,10 @@ export const App = () => {
                                     <Typography variant="h6" color="grey">{(income - expenses).toFixed(2)}</Typography>
                                 </Box>
 
-                                <RunningChart options={runningOptions} series={series} />
+                                {evtsFlat.length === 0 || (
+                                    <RunningChart options={runningOptions} series={series} />
+                                )}
+
                             </Grid>
 
 
