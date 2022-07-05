@@ -2,7 +2,7 @@ import {EventsCollection} from "../db/EventsCollection";
 import {DateTime} from "luxon";
 import {RRule, Weekday} from "rrule";
 
-const getCurrentEvents = (user, start, end) => {
+const getCurrentEvents = (user, start, end, balance) => {
     const userFilter = user ? {userId: user._id} : {};
 
     let filteredEvts = [];
@@ -68,15 +68,16 @@ const getCurrentEvents = (user, start, end) => {
 
     filteredEvts.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
 
-    let running = 0;
+    let running = balance !== '' ? parseFloat(balance) : 0;
     filteredEvts.map((evt) => {
         if (evt.type === 'bill') {
             running -= parseFloat(evt.amount);
         } else {
             running += parseFloat(evt.amount);
         }
-        evt.running = running;
-    })
+        evt.running = running.toFixed(2);
+    });
+
 
     return filteredEvts;
 };

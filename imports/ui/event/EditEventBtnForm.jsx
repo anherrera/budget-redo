@@ -48,7 +48,6 @@ const EditEventButton = ({event}) => {
         setSubmitting(true);
         try {
             if (isEditingEvent) {
-                console.log(formData);
                 await Meteor.call('events.edit', formData);
             } else {
                 await Meteor.call('events.insert', formData);
