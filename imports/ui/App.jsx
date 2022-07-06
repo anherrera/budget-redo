@@ -41,8 +41,10 @@ export const App = () => {
 
     const evtsFlat = useTracker(() => getCurrentEvents(user, start, end, balance));
     if (evtsFlat.length) {
-        expenses = evtsFlat.filter((i) => i.type === 'bill').map((i) => parseFloat(i.amount)).reduce((a, b) => a + b);
-        income = evtsFlat.filter((i) => i.type === 'income').map((i) => parseFloat(i.amount)).reduce((a, b) => a + b);
+        expenses = evtsFlat.filter((i) => i.type === 'bill').map((i) => parseFloat(i.amount));
+        expenses = expenses.length ? expenses.reduce((a, b) => a + b) : 0;
+        income = evtsFlat.filter((i) => i.type === 'income').map((i) => parseFloat(i.amount));
+        income = income.length ? income.reduce((a, b) => a + b) : 0;
         evtsFlat.map((i) => {
             series.push(parseFloat(i.running));
         });
@@ -75,63 +77,60 @@ export const App = () => {
 
     return (
         <ThemeProvider theme={theme}>
-        <Container>
-            <Grid container spacing={2}>
-                {user ? (
-                    <Grid container spacing={2}>
-                        <Grid item md={12}>
-                            <Header user={user} logout={logout}/>
-                        </Grid>
-                        <Grid item md={8} xs={12}>
-                            <Grid container spacing={2}>
-                                <Grid item md={12}>
-                                    <DateRangeForm
-                                        start={start}
-                                        end={end}
-                                        setStart={setStart}
-                                        setEnd={setEnd}
-                                    />
+            <Container>
+                <Grid container spacing={2}>
+                    {user ? (
+                        <Grid container spacing={2}>
+                            <Grid item md={12}>
+                                <Header user={user} logout={logout}/>
+                            </Grid>
+                            <Grid item md={8} xs={12}>
+                                <Grid container spacing={2}>
+                                    <Grid item md={12}>
+                                        <DateRangeForm
+                                            start={start}
+                                            end={end}
+                                            setStart={setStart}
+                                            setEnd={setEnd}
+                                        />
+                                    </Grid>
+                                    <Grid item md={12}>
+                                        <EditEventBtnForm event={defaultEvent} />
+                                    </Grid>
+                                    <Grid item md={12}>
+                                        <Box sx={{height: 700, width: '100%'}}>
+                                            <DataGrid columns={columns} rows={evtsFlat} pageSize={30} rowsPerPageOptions={[30]}
+                                                      getRowId={(row) => row.listId}/>
+                                        </Box>
+                                    </Grid>
                                 </Grid>
-                                <Grid item md={12}>
-                                    <EditEventBtnForm event={defaultEvent} />
-                                </Grid>
-                                <Grid item md={12}>
-                                    <Box sx={{height: 700, width: '100%'}}>
-                                        <DataGrid columns={columns} rows={evtsFlat} pageSize={30} rowsPerPageOptions={[30]}
-                                                  getRowId={(row) => row.listId}/>
+                            </Grid>
+                            <Grid item md={4} xs={12}>
+                                <Grid container md={12} justifyContent="flex-end">
+                                    <p>
+                                        If you currently have a balance in your bank account or anything that is not already included as income, you can enter it here to give yourself a better idea of how your budget will play out over time.
+                                    </p>
+
+                                    <TextField fullWidth size="extra-large" label="running" onChange={handleRunningChange} value={balance} />
+
+                                    <Box marginTop={5} marginBottom={5} sx={{align: "right"}}>
+                                        <Typography align="right" variant="h6" color="green">{income.toFixed(2)}</Typography>
+                                        <Typography align="right" variant="h6" color="red">{expenses.toFixed(2)}</Typography>
+                                        <Divider />
+                                        <Typography align="right" variant="h6" color="grey">{(income - expenses).toFixed(2)}</Typography>
                                     </Box>
+
+                                    {evtsFlat.length === 0 || (
+                                        <RunningChart options={runningOptions} series={series} />
+                                    )}
                                 </Grid>
                             </Grid>
                         </Grid>
-                        <Grid item md={4} xs={12}>
-                            <Grid container md={12} justifyContent="flex-end">
-                                <p>
-                                    If you currently have a balance in your bank account or anything that is not already included as income, you can enter it here to give yourself a better idea of how your budget will play out over time.
-                                </p>
-
-                                <TextField fullWidth size="extra-large" label="running" onChange={handleRunningChange} value={balance} />
-
-                                <Box marginTop={5} marginBottom={5} sx={{align: "right"}}>
-                                    <Typography variant="h6" color="green">{income.toFixed(2)}</Typography>
-                                    <Typography variant="h6" color="red">{expenses.toFixed(2)}</Typography>
-                                    <Divider />
-                                    <Typography variant="h6" color="grey">{(income - expenses).toFixed(2)}</Typography>
-                                </Box>
-
-                                {evtsFlat.length === 0 || (
-                                    <RunningChart options={runningOptions} series={series} />
-                                )}
-
-                            </Grid>
-
-
-                        </Grid>
-                    </Grid>
-                ) : (
-                    <LoginForm/>
-                )}
-            </Grid>
-        </Container>
+                    ) : (
+                        <LoginForm/>
+                    )}
+                </Grid>
+            </Container>
         </ThemeProvider>
     );
 };
