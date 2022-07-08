@@ -39,7 +39,8 @@ const getCurrentEvents = (user, start, end, balance) => {
                 interval: evt.interval,
                 freq: evt.frequency,
                 byweekday: weekdaysArray,
-                bysetpos: evt.lastDayOfMonth ? -1 : evt.dayOfMonth,
+                bysetpos: evt.lastDayOfMonth ? -1 : parseInt(evt.dayOfMonth),
+
             });
             if (evt.until) {
                 rule.options.until = DateTime.fromISO(evt.until).toJSDate();
