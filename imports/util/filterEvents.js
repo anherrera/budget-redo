@@ -33,18 +33,22 @@ const getCurrentEvents = (user, start, end, balance) => {
 
         let rule;
         if (evt.recurring) {
-            rule = new RRule({
+            let ruleOpts = {
                 dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
                 wkst: RRule.SU,
                 interval: evt.interval,
                 freq: evt.frequency,
-                byweekday: weekdaysArray,
-                bysetpos: evt.lastDayOfMonth ? -1 : parseInt(evt.dayOfMonth),
+                byweekday: weekdaysArray
+            };
 
-            });
-            if (evt.until) {
-                rule.options.until = DateTime.fromISO(evt.until).toJSDate();
+            if (evt.lastDayOfMonth === true || evt.setPos) {
+                ruleOpts.bysetpos = evt.lastDayOfMonth ? -1 : parseInt(evt.setPos);
             }
+            if (evt.until) {
+                ruleOpts.until = DateTime.fromISO(evt.until).toJSDate();
+            }
+
+            rule = new RRule(ruleOpts);
         } else {
             rule = new RRule({
                 wkst: RRule.SU,

@@ -14,6 +14,7 @@ const EditEventButton = ({event}) => {
     const [isEditing, setEditing] = useState(false);
     const [resetEvent, setResetEvent] = useState(event);
     const [submitting, setSubmitting] = useState(false);
+    const [timePeriod, setTimePeriod] = useState("month");
 
     const isEditingEvent = '_id' in event;
 
@@ -37,6 +38,27 @@ const EditEventButton = ({event}) => {
 
     const handleChange = event => {
         const isCheckbox = event.target.type === 'checkbox';
+
+        let time = timePeriod;
+
+        if (event.target.name === 'frequency') {
+            console.log(event.target.value);
+            switch (event.target.value) {
+                case RRule.MONTHLY:
+                    time = "month";
+                    break;
+                case RRule.WEEKLY:
+                    time = "week";
+                    break;
+                case RRule.YEARLY:
+                    time = "year";
+                    break;
+                default:
+                    time = "N/A";
+            }
+            setTimePeriod(time);
+        }
+
         setFormData({
             name: event.target.name,
             value: isCheckbox ? event.target.checked : event.target.value,
@@ -53,7 +75,7 @@ const EditEventButton = ({event}) => {
                 await Meteor.call('events.insert', formData);
             }
             setSubmitting(false);
-            setResetEvent(formData)
+            setResetEvent(event);
             setEditing(false);
         } catch (err) {
             console.error(err);
@@ -115,14 +137,14 @@ const EditEventButton = ({event}) => {
                             </Select>
                         </FormControl>
                         <FormControl className="half">
-                            <TextField name="dayOfMonth" value={formData.dayOfMonth} type="number"
+                            <TextField name="setPos" value={formData.setPos} type="number"
                                        onChange={handleChange} label="on the"
-                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth}/>
-                            <FormHelperText>-th day of the month</FormHelperText>
+                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency === RRule.DAILY} />
+                            <FormHelperText>-th day of the {timePeriod}</FormHelperText>
                         </FormControl>
-                        <FormControlLabel className="half" disabled={submitting || !formData.recurring}
+                        <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency === RRule.DAILY}
                                           control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth}
-                                                             onChange={handleChange}/>} label="last day of the month"/>
+                                                             onChange={handleChange}/>} label={"last day of the " + timePeriod}/>
                         <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly}>
                             <InputLabel id="weekdays">only falls on</InputLabel>
                             <Select name="weekdays" multiple value={formData.weekdays} onChange={handleChange}
