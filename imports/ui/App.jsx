@@ -9,8 +9,7 @@ import {
     Container,
     createTheme,
     Divider,
-    FormControl,
-    Grid, InputLabel,
+    Grid,
     TextField,
     ThemeProvider,
     Typography
@@ -106,7 +105,7 @@ export const App = () => {
                                 </Grid>
                             </Grid>
                             <Grid item md={4} xs={12}>
-                                <Grid container md={12} justifyContent="flex-end">
+                                <Grid container justifyContent="flex-end">
                                     <p>
                                         If you currently have a balance in your bank account or anything that is not already included as income, you can enter it here to give yourself a better idea of how your budget will play out over time.
                                     </p>

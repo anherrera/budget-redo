@@ -9,7 +9,7 @@ const defaultEvent = {
     recurring: false,
     interval: 1,
     frequency: RRule.MONTHLY,
-    dayOfMonth: 1,
+    setPos: 1,
     lastDayOfMonth: false,
     weekdays: [],
     weekdaysOnly: false,
