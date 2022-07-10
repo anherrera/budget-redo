@@ -40,3 +40,11 @@ input[type="date"]:disabled::-webkit-datetime-edit-day-field,
 input[type="date"]:disabled::-webkit-datetime-edit-text {
     color: transparent;
 }
+
+.MuiDataGrid-row.error {
+    background-color: #ffafaf;
+}
+
+.MuiDataGrid-row.warning {
+    background-color: #ffffaf;
+}
