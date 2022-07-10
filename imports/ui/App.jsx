@@ -34,6 +34,8 @@ export const App = () => {
     let income = 0;
     let expenses = 0;
     let series = [];
+    let min;
+    let max;
 
     const user = useTracker(() => Meteor.user());
     const logout = () => Meteor.logout();
@@ -45,7 +47,16 @@ export const App = () => {
         income = evtsFlat.filter((i) => i.type === 'income').map((i) => parseFloat(i.amount));
         income = income.length ? income.reduce((a, b) => a + b) : 0;
         evtsFlat.map((i) => {
-            series.push(parseFloat(i.running));
+            let r = parseFloat(i.running);
+            if (min === undefined) {
+                min = r
+            }
+            if (max === undefined) {
+                max = r
+            }
+            min = r < min ? r : min;
+            max = r >= max ? r : max;
+            series.push(r);
         });
     }
 
@@ -74,6 +85,7 @@ export const App = () => {
         },
     });
 
+    const rowStyle = (record) => record.row.running >= 0 ? record.row.running <= 200 ? 'warning' : 'success': 'error';
     return (
         <ThemeProvider theme={theme}>
             <Container>
@@ -98,7 +110,7 @@ export const App = () => {
                                     </Grid>
                                     <Grid item md={12}>
                                         <Box sx={{height: 700, width: '100%'}}>
-                                            <DataGrid columns={columns} rows={evtsFlat} pageSize={30} rowsPerPageOptions={[30]}
+                                            <DataGrid getRowClassName={rowStyle} columns={columns} rows={evtsFlat} pageSize={30} rowsPerPageOptions={[30]}
                                                       getRowId={(row) => row.listId}/>
                                         </Box>
                                     </Grid>
@@ -112,12 +124,17 @@ export const App = () => {
 
                                     <TextField fullWidth size="extra-large" label="running" onChange={handleRunningChange} value={balance} />
 
-                                    <Box marginTop={5} marginBottom={5} sx={{align: "right"}}>
+                                    <Grid item md={12} marginTop={5} marginBottom={5}>
                                         <Typography align="right" variant="h6" color="green">{income.toFixed(2)}</Typography>
                                         <Typography align="right" variant="h6" color="red">{expenses.toFixed(2)}</Typography>
                                         <Divider />
                                         <Typography align="right" variant="h6" color="grey">{(income - expenses).toFixed(2)}</Typography>
-                                    </Box>
+                                    </Grid>
+
+                                    <Grid item md={12} marginBottom={5}>
+                                        <Typography align="right" variant="h6" color="grey">Lowest: {min}</Typography>
+                                        <Typography align="right" variant="h6" color="grey">Highest: {max}</Typography>
+                                    </Grid>
 
                                     {evtsFlat.length === 0 || (
                                         <RunningChart options={runningOptions} series={series} />
