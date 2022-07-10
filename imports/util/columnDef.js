@@ -8,7 +8,7 @@ const deleteEvent = ({_id}) => Meteor.call('events.remove', _id);
 const columns = [
     {
         field: 'title',
-        flex: 1,
+        flex: 2,
         headerName: 'Title',
         editable: false,
     },
