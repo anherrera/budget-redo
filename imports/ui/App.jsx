@@ -109,8 +109,8 @@ export const App = () => {
                                         <EditEventBtnForm event={defaultEvent} />
                                     </Grid>
                                     <Grid item md={12}>
-                                        <Box sx={{height: 700, width: '100%'}}>
-                                            <DataGrid getRowClassName={rowStyle} columns={columns} rows={evtsFlat} pageSize={30} rowsPerPageOptions={[30]}
+                                        <Box sx={{height: 1800, width: '100%'}}>
+                                            <DataGrid getRowClassName={rowStyle} columns={columns} rows={evtsFlat} pageSize={100} rowsPerPageOptions={[100]}
                                                       getRowId={(row) => row.listId}/>
                                         </Box>
                                     </Grid>
