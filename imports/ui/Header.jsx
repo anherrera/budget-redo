@@ -9,7 +9,7 @@ export const Header = ({ user, logout }) => {
             <AppBar position="static" variant="">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Budget your life you nincompoop
+                        Budget Your Life. In Real Time.
                     </Typography>
                     { user ? (
                         <Button onClick={logout} variant="outline">
