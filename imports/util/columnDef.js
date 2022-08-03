@@ -1,5 +1,6 @@
 import {Due} from "../ui/event/Due";
 import {Edit} from "../ui/event/Edit";
+import {Title} from "../ui/event/Title";
 import React from "react";
 
 const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(amt)
@@ -11,6 +12,7 @@ const columns = [
         flex: 2,
         headerName: 'Title',
         editable: false,
+        renderCell: (title) => <Title evt={title.row} />
     },
     {
         field: 'type',
