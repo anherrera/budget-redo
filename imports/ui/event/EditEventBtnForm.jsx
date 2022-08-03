@@ -75,7 +75,7 @@ const EditEventButton = ({event}) => {
                 await Meteor.call('events.insert', formData);
             }
             setSubmitting(false);
-            setResetEvent(event);
+            setResetEvent(formData);
             setEditing(false);
         } catch (err) {
             console.error(err);
@@ -116,9 +116,12 @@ const EditEventButton = ({event}) => {
                         </FormControl>
                         <TextField disabled={submitting} name="amount" value={formData.amount} type="number"
                                    onChange={handleChange} label="amount"/>
-                        <TextField disabled={submitting} className="half" variant="filled"
+                        <TextField disabled={submitting} variant="filled"
                                    label={formData.recurring ? 'starting on' : 'on'} type="date" name="startdate" value={formData.startdate}
                                    onChange={handleChange}/>
+
+                        <FormControlLabel control={<Checkbox disabled={submitting} className="half" name="autoPay"
+                            checked={formData.autoPay} onChange={handleChange} />} label="automatic?" />
 
                         <FormControlLabel control={<Checkbox disabled={submitting} className="half" name="recurring"
                                                              checked={formData.recurring} onChange={handleChange}/>}

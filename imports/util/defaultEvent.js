@@ -14,6 +14,7 @@ const defaultEvent = {
     weekdays: [],
     weekdaysOnly: false,
     until: '',
+    autoPay: false,
 }
 
 export default defaultEvent;
