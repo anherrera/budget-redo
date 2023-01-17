@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import React, { useState } from 'react';
 import { LoginWithGithub } from "./LoginWithGithub";
+import { LoginWithGoogle } from "./LoginWithGoogle";
 import {Button, Container, FormControl, InputLabel, TextField} from "@mui/material";
 
 export const LoginForm = () => {
@@ -18,6 +19,7 @@ export const LoginForm = () => {
             <form onSubmit={submit} className="login-form">
 
                 <LoginWithGithub />
+                <br />
                 <LoginWithGoogle />
 
                 <FormControl margin="normal">
