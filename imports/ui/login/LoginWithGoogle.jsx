@@ -6,7 +6,6 @@ import {Google} from "@mui/icons-material";
 export const LoginWithGoogle = () => {
     const handleGoogleLogin = () => {
         Meteor.loginWithGoogle({
-            requestPermissions: ['user'],
             loginStyle: 'popup',
         });
     };
