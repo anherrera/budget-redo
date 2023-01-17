@@ -18,6 +18,7 @@ export const LoginForm = () => {
             <form onSubmit={submit} className="login-form">
 
                 <LoginWithGithub />
+                <LoginWithGoogle />
 
                 <FormControl margin="normal">
                     <InputLabel htmlFor="username">Username</InputLabel>

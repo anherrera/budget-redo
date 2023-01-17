@@ -9,9 +9,20 @@ Meteor.startup(() => {
         {service: 'github'},
         {
             $set: {
-                loginStyle: 'popup',
+                loginStyle: 'redirect',
                 clientId: process.env.GITHUB_CLIENT_ID,
                 secret: process.env.GITHUB_SECRET,
+            },
+        }
+    );
+
+    ServiceConfiguration.configurations.upsert(
+        {service: 'google'},
+        {
+            $set: {
+                loginStyle: 'popup',
+                clientId: process.env.GOOGLE_CLIENT_ID,
+                secret: process.env.GOOGLE_SECRET,
             },
         }
     );
