@@ -8,6 +8,11 @@ Also, generating the list of events is like O(N^2) and that shit sucks.
 
 So, let's build a new one in 2022.
 ====
+# Using it
+
+This project is running at [budget.weirdcoder.com](https://budget.weirdcoder.com/).
+
+# Developing
 
 install meteor 
 
