@@ -20,6 +20,7 @@
     "@types/react": "^18.0.14",
     "apexcharts": "^3.35.3",
     "bcrypt": "^5.0.1",
+    "force-ssl-heroku": "^1.0.2",
     "luxon": "^2.5.2",
     "meteor-node-stubs": "^1.2.1",
     "react": "^17.0.2",
