@@ -122,7 +122,7 @@ export const App = () => {
                                         If you currently have a balance in your bank account or anything that is not already included as income, you can enter it here to give yourself a better idea of how your budget will play out over time.
                                     </p>
 
-                                    <TextField fullWidth size="extra-large" label="running" onBlur={handleRunningChange} value={balance} />
+                                    <TextField fullWidth size="extra-large" label="running" onChange={handleRunningChange} value={balance} />
 
                                     <Grid item md={12} marginTop={5} marginBottom={5}>
                                         <Typography align="right" variant="h6" color="green">{income.toFixed(2)}</Typography>
