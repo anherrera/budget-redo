@@ -9,10 +9,11 @@ import {
     FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField, Tooltip
 } from "@mui/material";
 import {Add} from "@mui/icons-material";
+import defaultEvent from '../../util/defaultEvent';
 
 const EditEventButton = ({event}) => {
     const [isEditing, setEditing] = useState(false);
-    const [resetEvent, setResetEvent] = useState(event);
+    const [resetEvent, setResetEvent] = useState(defaultEvent);
     const [submitting, setSubmitting] = useState(false);
     const [timePeriod, setTimePeriod] = useState("month");
 
