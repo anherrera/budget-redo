@@ -9,6 +9,7 @@ import {
     FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField, Tooltip
 } from "@mui/material";
 import {Add} from "@mui/icons-material";
+import defaultEvent from "../../util/defaultEvent";
 
 const EditEventButton = ({event}) => {
     const [isEditing, setEditing] = useState(false);
@@ -75,7 +76,7 @@ const EditEventButton = ({event}) => {
                 await Meteor.call('events.insertAsync', formData);
             }
             setSubmitting(false);
-            setResetEvent(formData);
+            setResetEvent(defaultEvent);
             setEditing(false);
         } catch (err) {
             console.error(err);
