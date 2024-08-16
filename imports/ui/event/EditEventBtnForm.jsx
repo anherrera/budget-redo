@@ -1,6 +1,6 @@
 import React, {useReducer, useState} from 'react';
 import {RRule} from 'rrule'
-import {FaPencilAlt} from "react-icons/all";
+import { FaPencilAlt } from 'react-icons/fa';
 import {
     Box,
     Button, Checkbox, Container,
@@ -72,7 +72,7 @@ const EditEventButton = ({event}) => {
             if (isEditingEvent) {
                 await Meteor.call('events.edit', formData);
             } else {
-                await Meteor.call('events.insert', formData);
+                await Meteor.call('events.insertAsync', formData);
             }
             setSubmitting(false);
             setResetEvent(formData);

@@ -13,7 +13,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         return filteredEvts;
     }
 
-    let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}}).fetch();
+    let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}}).fetchAsync();
 
     evtsAll.forEach(evt => {
         let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();

@@ -1,11 +1,10 @@
 import {Meteor} from 'meteor/meteor';
-import {Accounts} from 'meteor/accounts-base';
 import {ServiceConfiguration} from 'meteor/service-configuration';
 import '/imports/api/eventsMethods';
 import '/imports/api/eventsPublications';
 
 Meteor.startup(() => {
-    ServiceConfiguration.configurations.upsert(
+    ServiceConfiguration.configurations.upsertAsync(
         {service: 'github'},
         {
             $set: {
@@ -16,7 +15,7 @@ Meteor.startup(() => {
         }
     );
 
-    ServiceConfiguration.configurations.upsert(
+    ServiceConfiguration.configurations.upsertAsync(
         {service: 'google'},
         {
             $set: {

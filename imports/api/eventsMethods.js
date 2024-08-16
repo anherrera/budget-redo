@@ -37,7 +37,7 @@ const standardizeEvent = (evt, userId) => {
 }
 
 Meteor.methods({
-    'events.insert'(evt) {
+    'events.insertAsync'(evt) {
         //check(evt.title, String);
         //check(evt.type, String);
         //check(lastDayOfMonth, Boolean);
@@ -47,7 +47,7 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        EventsCollection.insert({...standardizeEvent(evt, this.userId)})
+        EventsCollection.insertAsync({...standardizeEvent(evt, this.userId)})
     },
 
     async 'events.edit'(evt) {
@@ -61,7 +61,7 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        const foundEvent = await EventsCollection.findOne({ _id: evt._id, userId: this.userId });
+        const foundEvent = await EventsCollection.findOneAsync({ _id: evt._id, userId: this.userId });
 
         if (!foundEvent) {
             throw new Meteor.Error('Not found.');
@@ -70,23 +70,23 @@ Meteor.methods({
         let evtUpdate = standardizeEvent(evt);
 
         // slow, see difference in object and update individual keys. or send only keys that need updating from front ned
-        return await EventsCollection.update(evt._id, { $set: {...evtUpdate}})
+        return await EventsCollection.updateAsync(evt._id, { $set: {...evtUpdate}})
 
     },
 
-    'events.remove'(eventId) {
+    'events.removeAsync'(eventId) {
         check(eventId, String);
 
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
         }
 
-        const event = EventsCollection.findOne({ _id: eventId, userId: this.userId });
+        const event = EventsCollection.findOneAsync({ _id: eventId, userId: this.userId });
 
         if (!event) {
             throw new Meteor.Error('Not authorized.');
         }
 
-        EventsCollection.remove(eventId);
+        EventsCollection.removeAsync(eventId);
     }
 });

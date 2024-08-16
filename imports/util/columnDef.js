@@ -4,7 +4,7 @@ import {Title} from "../ui/event/Title";
 import React from "react";
 
 const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(amt)
-const deleteEvent = ({_id}) => Meteor.call('events.remove', _id);
+const deleteEvent = ({_id}) => Meteor.call('events.removeAsync', _id);
 
 const columns = [
     {

@@ -1,4 +1,4 @@
-import {MdOutlineCancel} from "react-icons/all";
+import { MdOutlineCancel} from "react-icons/md";
 
 import React from 'react';
 import {Box, Button, Tooltip} from "@mui/material";

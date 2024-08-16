@@ -1,5 +1,5 @@
 import React from 'react';
-import {MdLogout} from "react-icons/all";
+import { MdLogout } from "react-icons/md";
 import {AppBar, Box, Button, Toolbar, Typography} from "@mui/material";
 
 export const Header = ({ user, logout }) => {
