@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import {DateRangeForm} from "./DateRangeForm";
@@ -25,12 +25,21 @@ import defaultEvent from '../util/defaultEvent';
 import getCurrentEvents from "../util/filterEvents";
 import { deepPurple, teal } from '@mui/material/colors';
 import {RunningChart} from "./RunningChart";
+import {noop} from "underscore";
 
 
 export const App = () => {
     const [start, setStart] = useState(DateTime.now().startOf('day').toISODate());
     const [end, setEnd] = useState(DateTime.now().plus({months: 1}).endOf('day').toISODate());
     const [balance, setBalance] = useState('');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            noop()
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [balance]);
 
     let income = 0;
     let expenses = 0;
@@ -123,7 +132,7 @@ export const App = () => {
                                         If you currently have a balance in your bank account or anything that is not already included as income, you can enter it here to give yourself a better idea of how your budget will play out over time.
                                     </p>
 
-                                    <TextField fullWidth size="extra-large" label="running" onChange={handleRunningChange} value={balance} />
+                                    <TextField fullWidth size="extra-large" label="running" onChange={e => setBalance(e.target.value)} value={balance} />
 
                                     <Grid item md={12} marginTop={5} marginBottom={5}>
                                         <Typography align="right" variant="h6" color="green">{income.toFixed(2)}</Typography>
