@@ -37,7 +37,7 @@ export const App = () => {
     let min;
     let max;
 
-    const user = useTracker(() => Meteor.user());
+    const user = useTracker(async () => await Meteor.userAsync());
     const logout = () => Meteor.logout();
 
     const evtsFlat = useTracker(() => getCurrentEvents(user, start, end, balance));

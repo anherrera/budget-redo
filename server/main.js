@@ -3,8 +3,8 @@ import {ServiceConfiguration} from 'meteor/service-configuration';
 import '/imports/api/eventsMethods';
 import '/imports/api/eventsPublications';
 
-Meteor.startup(() => {
-    ServiceConfiguration.configurations.upsertAsync(
+Meteor.startup(async () => {
+    await ServiceConfiguration.configurations.upsertAsync(
         {service: 'github'},
         {
             $set: {
@@ -15,7 +15,7 @@ Meteor.startup(() => {
         }
     );
 
-    ServiceConfiguration.configurations.upsertAsync(
+    await ServiceConfiguration.configurations.upsertAsync(
         {service: 'google'},
         {
             $set: {

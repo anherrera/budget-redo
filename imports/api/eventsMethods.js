@@ -37,7 +37,7 @@ const standardizeEvent = (evt, userId) => {
 }
 
 Meteor.methods({
-    'events.insertAsync'(evt) {
+    async 'events.insertAsync'(evt) {
         //check(evt.title, String);
         //check(evt.type, String);
         //check(lastDayOfMonth, Boolean);
@@ -47,7 +47,7 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
-        EventsCollection.insertAsync({...standardizeEvent(evt, this.userId)})
+        await EventsCollection.insertAsync({...standardizeEvent(evt, this.userId)})
     },
 
     async 'events.edit'(evt) {
@@ -74,19 +74,19 @@ Meteor.methods({
 
     },
 
-    'events.removeAsync'(eventId) {
+    async 'events.removeAsync'(eventId) {
         check(eventId, String);
 
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
         }
 
-        const event = EventsCollection.findOneAsync({ _id: eventId, userId: this.userId });
+        const event = await EventsCollection.findOneAsync({_id: eventId, userId: this.userId});
 
         if (!event) {
             throw new Meteor.Error('Not authorized.');
         }
 
-        EventsCollection.removeAsync(eventId);
+        await EventsCollection.removeAsync(eventId);
     }
 });
