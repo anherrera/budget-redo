@@ -24,3 +24,4 @@ accounts-base@3.0.1
 oauth@3.0.0
 accounts-google
 force-ssl@1.1.1
+zodern:types

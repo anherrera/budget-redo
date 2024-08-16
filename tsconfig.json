@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "preserveSymlinks": true,
+    "paths": {
+      "meteor/*": [
+        ".meteor/local/types/packages.d.ts"
+      ]
+    }
+  }
+}
