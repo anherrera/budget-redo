@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {useTracker} from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
 import {DateRangeForm} from "./DateRangeForm";
 import {LoginForm} from "./login/LoginForm";
 import {DateTime} from "luxon";
@@ -37,7 +38,7 @@ export const App = () => {
     let min;
     let max;
 
-    const user = useTracker(async () => await Meteor.userAsync());
+    const user = useTracker(() => Meteor.user());
     const logout = () => Meteor.logout();
 
     const evtsFlat = useTracker(() => getCurrentEvents(user, start, end, balance));
