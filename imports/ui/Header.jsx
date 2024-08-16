@@ -4,7 +4,6 @@ import {AppBar, Box, Button, Toolbar, Typography} from "@mui/material";
 
 export const Header = ({ user, logout }) => {
     return (
-
         <Box sx={{ flexGrow: 1, marginBottom: 2 }}>
             <AppBar position="static" variant="">
                 <Toolbar>

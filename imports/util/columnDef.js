@@ -36,7 +36,7 @@ const columns = [
         headerName: 'Amount',
         editable: false,
         align: "right",
-        valueFormatter: (amt) => money(amt.value)
+        valueFormatter: (amt) => money(amt)
     },
     {
         field: 'running',
@@ -44,7 +44,7 @@ const columns = [
         headerName: "Running",
         editable: false,
         align: "right",
-        valueFormatter: (amt) => money(amt.value)
+        valueFormatter: (amt) => money(amt)
     },
     {
         field: 'actions',
