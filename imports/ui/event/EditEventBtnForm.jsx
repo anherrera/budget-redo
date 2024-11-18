@@ -76,7 +76,7 @@ const EditEventButton = ({event}) => {
                 await Meteor.call('events.insertAsync', formData);
             }
             setSubmitting(false);
-            setResetEvent(defaultEvent);
+            setResetEvent(formData);
             setEditing(false);
         } catch (err) {
             console.error(err);
