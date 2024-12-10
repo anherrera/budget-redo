@@ -43,7 +43,6 @@ const EditEventButton = ({event}) => {
         let time = timePeriod;
 
         if (event.target.name === 'frequency') {
-            console.log(event.target.value);
             switch (event.target.value) {
                 case RRule.MONTHLY:
                     time = "month";
@@ -129,7 +128,7 @@ const EditEventButton = ({event}) => {
                                           label="recurring item?"/>
 
                         <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
-                                   value={formData.interval} type="number" onChange={handleChange} label="every"/>
+                                   value={parseInt(formData.interval)} type="number" onChange={handleChange} label="every"/>
                         <FormControl className="half" disabled={submitting || !formData.recurring}>
                             <InputLabel id="label-frequency">frequency</InputLabel>
                             <Select name="frequency" value={formData.frequency} onChange={handleChange}
@@ -141,7 +140,7 @@ const EditEventButton = ({event}) => {
                             </Select>
                         </FormControl>
                         <FormControl className="half">
-                            <TextField name="setPos" value={formData.setPos} type="number"
+                            <TextField name="setPos" value={parseInt(formData.setPos)} type="number"
                                        onChange={handleChange} label="on the"
                                        disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency === RRule.DAILY} />
                             <FormHelperText>-th day of the {timePeriod}</FormHelperText>

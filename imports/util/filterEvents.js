@@ -36,7 +36,7 @@ const getCurrentEvents = (user, start, end, balance) => {
             let ruleOpts = {
                 dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
                 wkst: RRule.SU,
-                interval: evt.interval,
+                interval: parseInt(evt.interval),
                 freq: evt.frequency,
                 byweekday: weekdaysArray
             };
@@ -52,7 +52,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         } else {
             rule = new RRule({
                 wkst: RRule.SU,
-                interval: RRule.DAILY,
+                frequency: RRule.DAILY,
                 dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
                 count: 1
             });
