@@ -52,7 +52,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         } else {
             rule = new RRule({
                 wkst: RRule.SU,
-                frequency: RRule.DAILY,
+                freq: RRule.DAILY,
                 dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
                 count: 1
             });
