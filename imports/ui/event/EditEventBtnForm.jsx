@@ -25,6 +25,13 @@ const EditEventButton = ({event}) => {
         setEditing(!isEditing);
     }
 
+    const addEvent = (e) => {
+        e.preventDefault();
+        setResetEvent(defaultEvent);
+        setFormData({reset: true});
+        setEditing(true);
+    }
+
     const formReducer = (state, event) => {
         if (event.reset) {
             return resetEvent;
@@ -94,7 +101,7 @@ const EditEventButton = ({event}) => {
                         </Button>
                     </Tooltip>
                 ) : (
-                    <Button variant="contained" color="secondary" onClick={toggleEditing} endIcon={<Add />}>Add New Item</Button>
+                    <Button variant="contained" color="secondary" onClick={addEvent} endIcon={<Add />}>Add New Item</Button>
                 )}
             </Box>
 
@@ -127,6 +134,7 @@ const EditEventButton = ({event}) => {
                                                              checked={formData.recurring} onChange={handleChange}/>}
                                           label="recurring item?"/>
 
+
                         <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
                                    value={parseInt(formData.interval)} type="number" onChange={handleChange} label="every"/>
                         <FormControl className="half" disabled={submitting || !formData.recurring}>
@@ -139,16 +147,16 @@ const EditEventButton = ({event}) => {
                                 <MenuItem value={RRule.YEARLY}>Years</MenuItem>
                             </Select>
                         </FormControl>
-                        <FormControl className="half">
+                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}>
                             <TextField name="setPos" value={parseInt(formData.setPos)} type="number"
                                        onChange={handleChange} label="on the"
-                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency === RRule.DAILY} />
+                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency !== RRule.MONTHLY} />
                             <FormHelperText>-th day of the {timePeriod}</FormHelperText>
                         </FormControl>
-                        <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency === RRule.DAILY}
+                        <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}
                                           control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth}
                                                              onChange={handleChange}/>} label={"last day of the " + timePeriod}/>
-                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly}>
+                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly || formData.frequency == RRule.MONTHLY}>
                             <InputLabel id="weekdays">only falls on</InputLabel>
                             <Select name="weekdays" multiple value={formData.weekdays} onChange={handleChange}
                                     label="weekdays">
@@ -161,7 +169,7 @@ const EditEventButton = ({event}) => {
                                 <MenuItem value={RRule.SA.toString()}>Saturday</MenuItem>
                             </Select>
                         </FormControl>
-                        <FormControlLabel disabled={submitting || !formData.recurring} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label="only falls M-F" />
+                        <FormControlLabel disabled={submitting || !formData.recurring || formData.frequency == RRule.MONTHLY} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label="only falls M-F" />
                         <TextField className="half"
                                    name="until" variant="filled" value={formData.until} label="until" type="date"
                                    placeholder=""
