@@ -5,18 +5,17 @@ import {DateTime} from "luxon";
 import {RRule} from "rrule";
 
 const weekdayMap = {
-    0: RRule.MO,
-    1: RRule.TU,
-    2: RRule.WE,
-    3: RRule.TH,
-    4: RRule.FR,
-    5: RRule.SA,
-    6: RRule.SU,
+    1: RRule.MO,
+    2: RRule.TU,
+    3: RRule.WE,
+    4: RRule.TH,
+    5: RRule.FR,
+    6: RRule.SA,
+    7: RRule.SU
 }
 
 const standardizeEvent = (evt, userId) => {
     let evtObj = evt;
-
     delete evtObj.running;
     delete evtObj.timestamp;
     delete evtObj.due;
@@ -27,10 +26,16 @@ const standardizeEvent = (evt, userId) => {
         evtObj.amount = parseFloat(evt.amount).toFixed(2);
     }
 
-    if (evt.frequency == RRule.WEEKLY && !evt.weekdays) {
+    // if the event is weekly and no weekdays are selected, set the weekday to the day of the week
+    // if only one weekday is selected, set the weekday to the new day, for convenience
+    if (evt.frequency == RRule.WEEKLY && (evt.weekdays.length === 0 || evt.weekdays.length === 1)) {
         // figure out the day of the week from the startdate
         let weekday = DateTime.fromISO(evt.startdate).weekday;
-        evtObj.weekdays = [weekdayMap[weekday]].toString();
+
+        console.log("weekday is " + weekday);
+        console.log("weekdayMap[weekday] is " + weekdayMap[weekday]);
+
+        evt.weekdays = [weekdayMap[weekday]].toString();
     }
 
     if (evt._id) {

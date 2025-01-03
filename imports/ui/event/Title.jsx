@@ -1,5 +1,4 @@
 import React from 'react';
-import {Container, Tooltip} from "@mui/material";
 
 export const Title = ({ evt }) => {
     return evt.autoPay === true ? (

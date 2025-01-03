@@ -12,5 +12,5 @@ export const Edit = ({ evt, onDeleteClick}) => {
                 <Button variant="contained" color="error" onClick={ () => onDeleteClick(evt) }><MdOutlineCancel /></Button>
             </Tooltip>
         </Box>
-    ) : '')
+    ) : <></>)
 }

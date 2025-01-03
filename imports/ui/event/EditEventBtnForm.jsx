@@ -92,7 +92,7 @@ const EditEventButton = ({event}) => {
 
 
     return (
-        <>
+        <Box>
             <Box sx={{display: "flex", justifyContent: "right"}}>
                 {isEditingEvent ? (
                     <Tooltip placement="top" arrow title="Edit item">
@@ -183,7 +183,7 @@ const EditEventButton = ({event}) => {
                     </form>
                 </Container>
             </Dialog>
-        </>
+        </Box>
     )
 }
 
