@@ -16,8 +16,8 @@ const getCurrentEvents = (user, start, end, balance) => {
     let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}});
 
     evtsAll.forEach(evt => {
-        let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
-        let betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
+        let betweenBegin = DateTime.fromISO(start, {zone: 'utc'}).startOf('day').toJSDate();
+        let betweenEnd = DateTime.fromISO(end, {zone: 'utc'}).endOf('day').toJSDate();
 
         let weekdaysArray = [];
         let weekdays = [];
@@ -34,7 +34,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         let rule;
         if (evt.recurring) {
             let ruleOpts = {
-                dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
+                dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
                 wkst: RRule.SU,
                 interval: parseInt(evt.interval),
                 freq: evt.frequency,
@@ -53,7 +53,7 @@ const getCurrentEvents = (user, start, end, balance) => {
             rule = new RRule({
                 wkst: RRule.SU,
                 freq: RRule.DAILY,
-                dtstart: DateTime.fromISO(evt.startdate).toJSDate(),
+                dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
                 count: 1
             });
         }

@@ -4,6 +4,16 @@ import { EventsCollection } from '../db/EventsCollection';
 import {DateTime} from "luxon";
 import {RRule} from "rrule";
 
+const weekdayMap = {
+    0: RRule.MO,
+    1: RRule.TU,
+    2: RRule.WE,
+    3: RRule.TH,
+    4: RRule.FR,
+    5: RRule.SA,
+    6: RRule.SU,
+}
+
 const standardizeEvent = (evt, userId) => {
     let evtObj = evt;
 
@@ -15,6 +25,12 @@ const standardizeEvent = (evt, userId) => {
 
     if (evt.amount) {
         evtObj.amount = parseFloat(evt.amount).toFixed(2);
+    }
+
+    if (evt.frequency == RRule.WEEKLY && !evt.weekdays) {
+        // figure out the day of the week from the startdate
+        let weekday = DateTime.fromISO(evt.startdate).weekday;
+        evtObj.weekdays = [weekdayMap[weekday]].toString();
     }
 
     if (evt._id) {

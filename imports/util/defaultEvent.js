@@ -5,7 +5,7 @@ const defaultEvent = {
     title: '',
     type: 'bill',
     amount: '',
-    startdate: DateTime.now().toISODate(),
+    startdate: DateTime.now().startOf('month').toISODate(),
     recurring: false,
     interval: 1,
     frequency: RRule.MONTHLY,
