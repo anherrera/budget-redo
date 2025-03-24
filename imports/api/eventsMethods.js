@@ -21,6 +21,7 @@ const standardizeEvent = (evt, userId) => {
     delete evtObj.due;
     delete evtObj.dueHuge;
     delete evtObj.listId;
+    delete evtObj.userId;
 
     if (evt.amount) {
         evtObj.amount = parseFloat(evt.amount).toFixed(2);
@@ -31,11 +32,17 @@ const standardizeEvent = (evt, userId) => {
     if (evt.frequency == RRule.WEEKLY && (evt.weekdays.length === 0 || evt.weekdays.length === 1)) {
         // figure out the day of the week from the startdate
         let weekday = DateTime.fromISO(evt.startdate).weekday;
-
-        console.log("weekday is " + weekday);
-        console.log("weekdayMap[weekday] is " + weekdayMap[weekday]);
-
         evt.weekdays = [weekdayMap[weekday]].toString();
+    }
+
+    if (evt.frequency == RRule.MONTHLY && evt.setPos) {
+        // does the setPos actually match the date?
+        let dayOfMonth = DateTime.fromISO(evt.startdate).day;
+        let setPos = evt.setPos;
+
+        if (dayOfMonth !== setPos) {
+            evtObj.setPos = dayOfMonth;
+        }
     }
 
     if (evt._id) {
@@ -73,7 +80,7 @@ Meteor.methods({
 
     async 'events.edit'(evt) {
         // probably need to conditionally validate this
-        // check(event.title, String);
+        // check(evt.title, String);
         // check(event.type, String);
         // check(event.lastDayOfMonth, Boolean);
         // check(event.weekdaysOnly, Boolean);
@@ -89,6 +96,23 @@ Meteor.methods({
         }
 
         let evtUpdate = standardizeEvent(evt);
+
+        // delete keys if the value matches between the two objects
+        // get only the keys
+        let keys = Object.keys(evtUpdate);
+        console.log(keys);
+
+
+        for (let key in keys) {
+            if (key === '__id') {
+                continue;
+            }
+
+            if (evtUpdate[key] === foundEvent[key]) {
+                console.log("deleting key " + key);
+                delete evtUpdate[key];
+            }
+        }
 
         // slow, see difference in object and update individual keys. or send only keys that need updating from front ned
         return await EventsCollection.updateAsync(evt._id, { $set: {...evtUpdate}})
