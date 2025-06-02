@@ -113,7 +113,7 @@ const EditEventButton = ({event}) => {
                 <Container>
                     <form id="event-form" onSubmit={handleSubmit}>
                         <TextField className="half" disabled={submitting} name="title" onChange={handleChange}
-                                   value={formData.title} label="title" required/>
+                                   value={formData.title} label="Title" required/>
                         <FormControl className="half" disabled={submitting}>
                             <InputLabel id="label-type">type</InputLabel>
                             <Select labelId="label-type" name="type" value={formData.type} onChange={handleChange}
