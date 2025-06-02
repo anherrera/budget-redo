@@ -13,7 +13,7 @@ export const RunningChart = ({ options, series }) => {
             options={options}
             series={seriesData}
             type="line"
-            width="400px"
+            width="100%"
         />
     );
 };

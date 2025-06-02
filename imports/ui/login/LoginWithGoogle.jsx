@@ -11,8 +11,21 @@ export const LoginWithGoogle = () => {
     };
 
     return (
-        <Button variant="outlined" type="button" className="google-btn" onClick={handleGoogleLogin} endIcon={<Google size="large" />}>
-            Login with Google
+        <Button 
+            variant="contained" 
+            type="button" 
+            onClick={handleGoogleLogin} 
+            startIcon={<Google />}
+            fullWidth
+            size="large"
+            sx={{ 
+                bgcolor: '#4285f4', 
+                color: 'white',
+                '&:hover': { bgcolor: '#3367d6' },
+                py: 1.5
+            }}
+        >
+            Continue with Google
         </Button>
     );
 };

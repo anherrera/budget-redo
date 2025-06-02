@@ -1,6 +1,7 @@
 body {
-    font-family: "Roboto", sans-serif;
+    font-family: "Inter", "Roboto", "Helvetica", "Arial", sans-serif;
     margin: 0;
+    transition: background-color 0.3s ease;
 }
 
 #event-form {
@@ -18,33 +19,11 @@ body {
     flex-basis: 46%;
 }
 
-.login-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid lightgray;
-    padding: 50px;
+
+input[type="date"]:focus::-webkit-datetime-edit-year-field,
+input[type="date"]:focus::-webkit-datetime-edit-month-field,
+input[type="date"]:focus::-webkit-datetime-edit-day-field,
+input[type="date"]:focus::-webkit-datetime-edit-text {
+    color: inherit;
 }
 
-input[type="date"]:in-range::-webkit-datetime-edit-year-field,
-input[type="date"]:in-range::-webkit-datetime-edit-month-field,
-input[type="date"]:in-range::-webkit-datetime-edit-day-field,
-input[type="date"]:in-range::-webkit-datetime-edit-text {
-    color: transparent;
-}
-
-input[type="date"]:disabled::-webkit-datetime-edit-year-field,
-input[type="date"]:disabled::-webkit-datetime-edit-month-field,
-input[type="date"]:disabled::-webkit-datetime-edit-day-field,
-input[type="date"]:disabled::-webkit-datetime-edit-text {
-    color: transparent;
-}
-
-.MuiDataGrid-row.error {
-    background-color: #ffafaf;
-}
-
-.MuiDataGrid-row.warning {
-    background-color: #ffffaf;
-}
