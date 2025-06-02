@@ -65,7 +65,7 @@ const getCurrentEvents = (user, start, end, balance) => {
                 weekdays: weekdays,
                 listId: evt._id + idx,
                 timestamp: displayTime.toMillis(),
-                due: displayTime.toLocaleString(),
+                due: displayTime.toFormat('MM/dd/yyyy'),
                 dueHuge: displayTime.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
             })
         })

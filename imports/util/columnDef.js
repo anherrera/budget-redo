@@ -28,6 +28,7 @@ const columns = [
         headerName: 'Due',
         type: 'number',
         align: 'left',
+        headerAlign: 'left',
         editable: false,
         sortable: true,
         renderCell: (ts) => <Due evt={ts.row}/>
@@ -38,20 +39,25 @@ const columns = [
         headerName: 'Amount',
         editable: false,
         align: "right",
+        headerAlign: "right",
         renderCell: (params) => {
             const event = params.row;
             const amount = money(params.value);
             
             if (event.type === 'cc_payment' && event.ccStatement?.statementDate) {
-                const statementDate = new Date(event.ccStatement.statementDate).toLocaleDateString();
+                const statementDate = new Date(event.ccStatement.statementDate + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                });
                 return (
                     <Tooltip title={`Due Date: ${statementDate}`} arrow>
-                        <span style={{ cursor: 'help' }}>{amount}</span>
+                        <span className="cc-amount-with-due">{amount}</span>
                     </Tooltip>
                 );
             }
             
-            return amount;
+            return <span className="monospace">{amount}</span>;
         }
     },
     {
@@ -60,7 +66,11 @@ const columns = [
         headerName: "Running",
         editable: false,
         align: "right",
-        valueFormatter: (amt) => money(amt)
+        headerAlign: "right",
+        renderCell: (params) => {
+            const amount = money(params.value);
+            return <span className="monospace">{amount}</span>;
+        }
     },
     {
         field: 'actions',

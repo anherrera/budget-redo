@@ -27,3 +27,15 @@ input[type="date"]:focus::-webkit-datetime-edit-text {
     color: inherit;
 }
 
+/* Table cell styles */
+.monospace {
+    font-family: monospace;
+}
+
+.cc-amount-with-due {
+    cursor: help;
+    font-family: monospace;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+

@@ -11,7 +11,11 @@ const CreditCardMetadata = ({ event }) => {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString + 'T00:00:00').toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    });
   };
 
   const hasStatementDate = ccStatement?.statementDate;
