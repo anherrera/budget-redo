@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { EventsCollection } from '../db/EventsCollection';
 import {DateTime} from "luxon";
 import {RRule} from "rrule";
@@ -107,5 +107,28 @@ Meteor.methods({
         }
 
         await EventsCollection.removeAsync(eventId);
+    },
+
+    async 'events.updateCCStatement'(eventId, ccStatementData) {
+        check(eventId, String);
+        check(ccStatementData, {
+            statementDate: Match.Maybe(String)
+        });
+
+        if (!this.userId) {
+            throw new Meteor.Error('Not authorized.');
+        }
+
+        const event = await EventsCollection.findOneAsync({_id: eventId, userId: this.userId});
+
+        if (!event) {
+            throw new Meteor.Error('Not authorized.');
+        }
+
+        await EventsCollection.updateAsync(eventId, {
+            $set: {
+                ccStatement: ccStatementData
+            }
+        });
     }
 });

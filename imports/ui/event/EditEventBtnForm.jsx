@@ -47,11 +47,12 @@ const EditEventButton = ({event}) => {
 
     const handleChange = event => {
         const isCheckbox = event.target.type === 'checkbox';
+        const { name, value, checked } = event.target;
 
         let time = timePeriod;
 
-        if (event.target.name === 'frequency') {
-            switch (event.target.value) {
+        if (name === 'frequency') {
+            switch (value) {
                 case RRule.MONTHLY:
                     time = "month";
                     break;
@@ -67,10 +68,22 @@ const EditEventButton = ({event}) => {
             setTimePeriod(time);
         }
 
-        setFormData({
-            name: event.target.name,
-            value: isCheckbox ? event.target.checked : event.target.value,
-        });
+        // Handle nested properties like ccStatement.actualBalance
+        if (name.includes('.')) {
+            const [parent, child] = name.split('.');
+            setFormData({
+                name: parent,
+                value: {
+                    ...formData[parent],
+                    [child]: isCheckbox ? checked : value
+                }
+            });
+        } else {
+            setFormData({
+                name: name,
+                value: isCheckbox ? checked : value,
+            });
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -120,6 +133,7 @@ const EditEventButton = ({event}) => {
                                     label="type">
                                 <MenuItem value="bill">Bill due</MenuItem>
                                 <MenuItem value="income">Income</MenuItem>
+                                <MenuItem value="cc_payment">Credit Card Payment</MenuItem>
                             </Select>
                         </FormControl>
                         <TextField disabled={submitting} name="amount" value={formData.amount} type="number"
@@ -127,6 +141,18 @@ const EditEventButton = ({event}) => {
                         <TextField disabled={submitting} variant="filled"
                                    label={formData.recurring ? 'starting on' : 'on'} type="date" name="startdate" value={formData.startdate}
                                    onChange={handleChange} required/>
+
+                        {formData.type === 'cc_payment' && (
+                            <TextField 
+                                disabled={submitting} 
+                                name="ccStatement.statementDate" 
+                                value={formData.ccStatement?.statementDate || ''} 
+                                type="date"
+                                variant="filled"
+                                onChange={handleChange} 
+                                label="Statement Date"
+                            />
+                        )}
 
                         <FormControlLabel control={<Checkbox disabled={submitting} className="half" name="autoPay"
                             checked={formData.autoPay} onChange={handleChange} />} label="automatic?" />
