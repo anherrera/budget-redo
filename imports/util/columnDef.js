@@ -2,6 +2,7 @@ import {Due} from "../ui/event/Due";
 import {Edit} from "../ui/event/Edit";
 import {Title} from "../ui/event/Title";
 import React from "react";
+import { Meteor } from 'meteor/meteor';
 
 const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(amt)
 const deleteEvent = ({_id}) => Meteor.call('events.removeAsync', _id);

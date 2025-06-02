@@ -1,6 +1,7 @@
 import React, {useReducer, useState} from 'react';
 import {RRule} from 'rrule'
 import { FaPencilAlt } from 'react-icons/fa';
+import { Meteor } from 'meteor/meteor';
 import {
     Box,
     Button, Checkbox, Container,
@@ -112,7 +113,7 @@ const EditEventButton = ({event}) => {
                 <Container>
                     <form id="event-form" onSubmit={handleSubmit}>
                         <TextField className="half" disabled={submitting} name="title" onChange={handleChange}
-                                   value={formData.title} label="title"/>
+                                   value={formData.title} label="title" required/>
                         <FormControl className="half" disabled={submitting}>
                             <InputLabel id="label-type">type</InputLabel>
                             <Select labelId="label-type" name="type" value={formData.type} onChange={handleChange}
@@ -122,10 +123,10 @@ const EditEventButton = ({event}) => {
                             </Select>
                         </FormControl>
                         <TextField disabled={submitting} name="amount" value={formData.amount} type="number"
-                                   onChange={handleChange} label="amount"/>
+                                   onChange={handleChange} label="amount" required/>
                         <TextField disabled={submitting} variant="filled"
                                    label={formData.recurring ? 'starting on' : 'on'} type="date" name="startdate" value={formData.startdate}
-                                   onChange={handleChange}/>
+                                   onChange={handleChange} required/>
 
                         <FormControlLabel control={<Checkbox disabled={submitting} className="half" name="autoPay"
                             checked={formData.autoPay} onChange={handleChange} />} label="automatic?" />
@@ -136,7 +137,7 @@ const EditEventButton = ({event}) => {
 
 
                         <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
-                                   value={parseInt(formData.interval)} type="number" onChange={handleChange} label="every"/>
+                                   value={parseInt(formData.interval, 10) || 1} type="number" onChange={handleChange} label="every" inputProps={{min: 1}}/>
                         <FormControl className="half" disabled={submitting || !formData.recurring}>
                             <InputLabel id="label-frequency">frequency</InputLabel>
                             <Select name="frequency" value={formData.frequency} onChange={handleChange}
@@ -148,9 +149,9 @@ const EditEventButton = ({event}) => {
                             </Select>
                         </FormControl>
                         <FormControl className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}>
-                            <TextField name="setPos" value={parseInt(formData.setPos)} type="number"
+                            <TextField name="setPos" value={parseInt(formData.setPos, 10) || 1} type="number"
                                        onChange={handleChange} label="on the"
-                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency !== RRule.MONTHLY} />
+                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency !== RRule.MONTHLY} inputProps={{min: 1, max: 31}} />
                             <FormHelperText>-th day of the {timePeriod}</FormHelperText>
                         </FormControl>
                         <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}

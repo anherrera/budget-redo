@@ -32,8 +32,6 @@ const standardizeEvent = (evt, userId) => {
         // figure out the day of the week from the startdate
         let weekday = DateTime.fromISO(evt.startdate).weekday;
 
-        console.log("weekday is " + weekday);
-        console.log("weekdayMap[weekday] is " + weekdayMap[weekday]);
 
         evt.weekdays = [weekdayMap[weekday]].toString();
     }

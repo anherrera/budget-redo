@@ -73,12 +73,18 @@ const getCurrentEvents = (user, start, end, balance) => {
 
     filteredEvts.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
 
-    let running = balance !== '' ? parseFloat(balance) : 0;
+    let running = balance !== '' ? (isNaN(parseFloat(balance)) ? 0 : parseFloat(balance)) : 0;
     filteredEvts.map((evt) => {
+        const amount = parseFloat(evt.amount);
+        if (isNaN(amount)) {
+            console.warn('Invalid amount for event:', evt.title, evt.amount);
+            return;
+        }
+        
         if (evt.type === 'bill') {
-            running -= parseFloat(evt.amount);
+            running -= amount;
         } else {
-            running += parseFloat(evt.amount);
+            running += amount;
         }
         evt.running = running.toFixed(2);
     });

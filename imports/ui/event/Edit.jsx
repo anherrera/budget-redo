@@ -6,7 +6,7 @@ import EditEventBtnForm from "./EditEventBtnForm";
 
 export const Edit = ({ evt, onDeleteClick}) => {
     return (evt.listId === evt._id + '0' ? (
-        <Box sx={{width: '100%', display: "flex", gap: '10px', justifyContent: 'center'}}>
+        <Box sx={{width: '100%', height: '100%', display: "flex", gap: '10px', justifyContent: 'center', alignItems: 'center'}}>
             <EditEventBtnForm event={evt} />
             <Tooltip arrow title="Delete item" placement="top">
                 <Button variant="contained" color="error" onClick={ () => onDeleteClick(evt) }><MdOutlineCancel /></Button>
