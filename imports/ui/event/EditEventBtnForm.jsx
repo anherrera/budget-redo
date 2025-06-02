@@ -150,7 +150,7 @@ const EditEventButton = ({event}) => {
                                 type="date"
                                 variant="filled"
                                 onChange={handleChange} 
-                                label="Statement Date"
+                                label="Due Date"
                             />
                         )}
 

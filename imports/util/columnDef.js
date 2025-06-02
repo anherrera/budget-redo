@@ -45,7 +45,7 @@ const columns = [
             if (event.type === 'cc_payment' && event.ccStatement?.statementDate) {
                 const statementDate = new Date(event.ccStatement.statementDate).toLocaleDateString();
                 return (
-                    <Tooltip title={`Statement Date: ${statementDate}`} arrow>
+                    <Tooltip title={`Due Date: ${statementDate}`} arrow>
                         <span style={{ cursor: 'help' }}>{amount}</span>
                     </Tooltip>
                 );
