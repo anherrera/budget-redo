@@ -16,8 +16,8 @@ const getCurrentEvents = (user, start, end, balance) => {
     let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}});
 
     evtsAll.forEach(evt => {
-        let betweenBegin = DateTime.fromISO(start, {zone: 'utc'}).startOf('day').toJSDate();
-        let betweenEnd = DateTime.fromISO(end, {zone: 'utc'}).endOf('day').toJSDate();
+        let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
+        let betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
 
         let weekdaysArray = [];
         let weekdays = [];
@@ -59,7 +59,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         }
 
         rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
-            let displayTime = DateTime.fromJSDate(instance).setZone('utc');
+            let displayTime = DateTime.fromJSDate(instance).startOf('day');
             filteredEvts.push({
                 ...evt,
                 weekdays: weekdays,
