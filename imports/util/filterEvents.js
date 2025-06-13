@@ -81,7 +81,7 @@ const getCurrentEvents = (user, start, end, balance) => {
             return;
         }
         
-        if (evt.type === 'bill') {
+        if (evt.type === 'bill' || evt.type === 'cc_payment') {
             running -= amount;
         } else {
             running += amount;
