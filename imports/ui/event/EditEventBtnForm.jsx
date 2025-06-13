@@ -183,7 +183,7 @@ const EditEventButton = ({event}) => {
                         <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}
                                           control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth}
                                                              onChange={handleChange}/>} label={"last day of the " + timePeriod}/>
-                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly || formData.frequency == RRule.MONTHLY}>
+                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly}>
                             <InputLabel id="weekdays">only falls on</InputLabel>
                             <Select name="weekdays" multiple value={formData.weekdays} onChange={handleChange}
                                     label="weekdays">
@@ -196,7 +196,7 @@ const EditEventButton = ({event}) => {
                                 <MenuItem value={RRule.SA.toString()}>Saturday</MenuItem>
                             </Select>
                         </FormControl>
-                        <FormControlLabel disabled={submitting || !formData.recurring || formData.frequency == RRule.MONTHLY} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label="only falls M-F" />
+                        <FormControlLabel disabled={submitting || !formData.recurring} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label={formData.frequency === RRule.MONTHLY ? "shift weekend to Friday" : "only falls M-F"} />
                         <TextField className="half"
                                    name="until" variant="filled" value={formData.until} label="until" type="date"
                                    placeholder=""

@@ -23,12 +23,17 @@ const standardizeEvent = (evt, userId) => {
     delete evtObj.listId;
 
     if (evt.amount) {
-        evtObj.amount = parseFloat(evt.amount).toFixed(2);
+        const parsedAmount = parseFloat(evt.amount);
+        if (!isNaN(parsedAmount)) {
+            evtObj.amount = parsedAmount.toFixed(2);
+        } else {
+            evtObj.amount = "0.00";
+        }
     }
 
     // if the event is weekly and no weekdays are selected, set the weekday to the day of the week
     // if only one weekday is selected, set the weekday to the new day, for convenience
-    if (evt.frequency == RRule.WEEKLY && (evt.weekdays.length === 0 || evt.weekdays.length === 1)) {
+    if (evt.frequency == RRule.WEEKLY && evt.weekdays && (evt.weekdays.length === 0 || evt.weekdays.length === 1)) {
         // figure out the day of the week from the startdate
         let weekday = DateTime.fromISO(evt.startdate).weekday;
 
@@ -86,7 +91,7 @@ Meteor.methods({
             throw new Meteor.Error('Not found.');
         }
 
-        let evtUpdate = standardizeEvent(evt);
+        let evtUpdate = standardizeEvent(evt, this.userId);
 
         // slow, see difference in object and update individual keys. or send only keys that need updating from front ned
         return await EventsCollection.updateAsync(evt._id, { $set: {...evtUpdate}})

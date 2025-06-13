@@ -1,6 +1,7 @@
 import {EventsCollection} from "../db/EventsCollection";
 import {DateTime} from "luxon";
 import {RRule, Weekday} from "rrule";
+import {adjustToWeekday, shouldAdjustToWeekday} from "./weekdayAdjustment";
 
 const getCurrentEvents = (user, start, end, balance) => {
     const userFilter = user ? {userId: user._id} : {};
@@ -32,13 +33,15 @@ const getCurrentEvents = (user, start, end, balance) => {
         }
 
         let rule;
+        const needsWeekdayAdjustment = evt.frequency === RRule.MONTHLY && shouldAdjustToWeekday(evt);
+        
         if (evt.recurring) {
             let ruleOpts = {
                 dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
                 wkst: RRule.SU,
                 interval: parseInt(evt.interval),
                 freq: evt.frequency,
-                byweekday: weekdaysArray
+                byweekday: needsWeekdayAdjustment ? [] : weekdaysArray
             };
 
             if (evt.lastDayOfMonth === true || evt.setPos) {
@@ -59,7 +62,8 @@ const getCurrentEvents = (user, start, end, balance) => {
         }
 
         rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
-            let displayTime = DateTime.fromJSDate(instance).startOf('day');
+            let adjustedInstance = needsWeekdayAdjustment ? adjustToWeekday(instance) : instance;
+            let displayTime = DateTime.fromJSDate(adjustedInstance).startOf('day');
             filteredEvts.push({
                 ...evt,
                 weekdays: weekdays,
@@ -73,7 +77,11 @@ const getCurrentEvents = (user, start, end, balance) => {
 
     filteredEvts.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
 
-    let running = balance !== '' ? (isNaN(parseFloat(balance)) ? 0 : parseFloat(balance)) : 0;
+    let running = 0;
+    if (balance !== '' && balance !== null && balance !== undefined) {
+        const parsedBalance = parseFloat(balance);
+        running = isNaN(parsedBalance) ? 0 : parsedBalance;
+    }
     filteredEvts.map((evt) => {
         const amount = parseFloat(evt.amount);
         if (isNaN(amount)) {

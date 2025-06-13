@@ -18,8 +18,6 @@ const CreditCardMetadata = ({ event }) => {
     });
   };
 
-  const hasStatementDate = ccStatement?.statementDate;
-
   return (
     <Box sx={{ 
       mt: 1, 
@@ -31,7 +29,7 @@ const CreditCardMetadata = ({ event }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <CreditCard fontSize="small" />
         <Typography variant="body2" color="text.secondary">
-          Statement: {formatDate(hasStatementDate)}
+          Statement: {formatDate(ccStatement?.statementDate)}
         </Typography>
       </Box>
     </Box>
