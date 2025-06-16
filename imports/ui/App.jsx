@@ -71,10 +71,14 @@ export const App = () => {
             const running = parseFloat(i.running);
             const date = i.due; // Use the formatted date string
             
-            // Keep the last (highest) running total for each date
-            if (!dailyRunning.has(date) || running > dailyRunning.get(date)) {
-                dailyRunning.set(date, running);
-            }
+            // Calculate min/max from ALL running totals
+            if (minVal === undefined) minVal = running;
+            if (maxVal === undefined) maxVal = running;
+            minVal = running < minVal ? running : minVal;
+            maxVal = running > maxVal ? running : maxVal;
+            
+            // Keep the last running total for each date (for the chart)
+            dailyRunning.set(date, running);
         });
         
         // Convert to arrays sorted by date
@@ -84,14 +88,6 @@ export const App = () => {
         
         const chartSeries = sortedEntries.map(([date, running]) => running);
         const chartCategories = sortedEntries.map(([date, running]) => date);
-        
-        // Calculate min/max from deduplicated data
-        chartSeries.forEach(r => {
-            if (minVal === undefined) minVal = r;
-            if (maxVal === undefined) maxVal = r;
-            minVal = r < minVal ? r : minVal;
-            maxVal = r >= maxVal ? r : maxVal;
-        });
         
         return {
             income: totalIncome,
