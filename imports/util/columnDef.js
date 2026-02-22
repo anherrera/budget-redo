@@ -6,6 +6,7 @@ import { Meteor } from 'meteor/meteor';
 import { Tooltip } from "@mui/material";
 
 const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(amt)
+const moneyFromCents = (cents) => money((cents || 0) / 100);
 const deleteEvent = ({_id}) => Meteor.call('events.removeAsync', _id);
 
 const columns = [
@@ -34,7 +35,7 @@ const columns = [
         renderCell: (ts) => <Due evt={ts.row}/>
     },
     {
-        field: 'amount',
+        field: 'amountCents',
         flex: 1,
         headerName: 'Amount',
         editable: false,
@@ -42,7 +43,7 @@ const columns = [
         headerAlign: "right",
         renderCell: (params) => {
             const event = params.row;
-            const amount = money(params.value);
+            const amount = moneyFromCents(params.value);
             
             if (event.type === 'cc_payment' && event.ccStatement?.statementDate) {
                 const statementDate = new Date(event.ccStatement.statementDate + 'T00:00:00').toLocaleDateString('en-US', {

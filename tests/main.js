@@ -1,9 +1,12 @@
 import assert from "assert";
+import "./eventsMethods.server.tests";
+import "./recurrence.server.tests";
+import "./runningBalance.server.tests";
 
-describe("budget-redux", function () {
+describe("budget-redo", function () {
   it("package.json has correct name", async function () {
     const { name } = await import("../package.json");
-    assert.strictEqual(name, "budget-redux");
+    assert.strictEqual(name, "budget-redo");
   });
 
   if (Meteor.isClient) {

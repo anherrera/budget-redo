@@ -12,9 +12,19 @@ import {
 import {Add} from "@mui/icons-material";
 import defaultEvent from "../../util/defaultEvent";
 
+const toFormEvent = (evt) => {
+    const amount = evt.amount ?? (
+        Number.isInteger(evt.amountCents) ? (evt.amountCents / 100).toFixed(2) : ''
+    );
+    return {
+        ...evt,
+        amount
+    };
+};
+
 const EditEventButton = ({event}) => {
     const [isEditing, setEditing] = useState(false);
-    const [resetEvent, setResetEvent] = useState(event);
+    const [resetEvent, setResetEvent] = useState(toFormEvent(event));
     const [submitting, setSubmitting] = useState(false);
     const [timePeriod, setTimePeriod] = useState("month");
 
@@ -43,7 +53,7 @@ const EditEventButton = ({event}) => {
         }
     }
 
-    const [formData, setFormData] = useReducer(formReducer, event);
+    const [formData, setFormData] = useReducer(formReducer, toFormEvent(event));
 
     const handleChange = event => {
         const isCheckbox = event.target.type === 'checkbox';
@@ -91,9 +101,9 @@ const EditEventButton = ({event}) => {
         setSubmitting(true);
         try {
             if (isEditingEvent) {
-                await Meteor.call('events.edit', formData);
+                await Meteor.callAsync('events.edit', formData);
             } else {
-                await Meteor.call('events.insertAsync', formData);
+                await Meteor.callAsync('events.insertAsync', formData);
             }
             setSubmitting(false);
             setResetEvent(formData);

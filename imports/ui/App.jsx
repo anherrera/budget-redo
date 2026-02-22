@@ -13,7 +13,6 @@ import {
     createTheme,
     Divider,
     Grid,
-    Paper,
     TextField,
     ThemeProvider,
     Typography
@@ -28,7 +27,6 @@ import defaultEvent from '../util/defaultEvent';
 import getCurrentEvents from "../util/filterEvents";
 import { deepPurple, teal, grey } from '@mui/material/colors';
 import {RunningChart} from "./RunningChart";
-import {noop} from "underscore";
 
 
 export const App = () => {
@@ -53,19 +51,23 @@ export const App = () => {
             return { income: 0, expenses: 0, series: [], min: undefined, max: undefined, chartCategories: [] };
         }
         
-        let totalIncome = 0;
-        let totalExpenses = 0;
+        let totalIncomeCents = 0;
+        let totalExpensesCents = 0;
         let minVal, maxVal;
         
         // Group by date and get the final running total for each date
         const dailyRunning = new Map();
         
         evtsFlat.forEach((i) => {
-            const amount = parseFloat(i.amount);
+            const amountCents = Number.isInteger(i.amountCents)
+                ? i.amountCents
+                : Math.round((parseFloat(i.amount) || 0) * 100);
             if (i.type === 'bill') {
-                totalExpenses += amount;
+                totalExpensesCents += amountCents;
             } else if (i.type === 'income') {
-                totalIncome += amount;
+                totalIncomeCents += amountCents;
+            } else if (i.type === 'cc_payment') {
+                totalExpensesCents += amountCents;
             }
             
             const running = parseFloat(i.running);
@@ -90,8 +92,8 @@ export const App = () => {
         const chartCategories = sortedEntries.map(([date, running]) => date);
         
         return {
-            income: totalIncome,
-            expenses: totalExpenses,
+            income: totalIncomeCents / 100,
+            expenses: totalExpensesCents / 100,
             series: chartSeries,
             min: minVal,
             max: maxVal,

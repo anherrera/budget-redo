@@ -2,6 +2,7 @@ import {EventsCollection} from "../db/EventsCollection";
 import {DateTime} from "luxon";
 import {RRule, Weekday} from "rrule";
 import {adjustToWeekday, shouldAdjustToWeekday} from "./weekdayAdjustment";
+import {applyRunningBalance, getAmountCents} from "./runningBalance";
 
 const getCurrentEvents = (user, start, end, balance) => {
     const userFilter = user ? {userId: user._id} : {};
@@ -66,6 +67,7 @@ const getCurrentEvents = (user, start, end, balance) => {
             let displayTime = DateTime.fromJSDate(adjustedInstance).startOf('day');
             filteredEvts.push({
                 ...evt,
+                amountCents: getAmountCents(evt),
                 weekdays: weekdays,
                 listId: evt._id + idx,
                 timestamp: displayTime.toMillis(),
@@ -75,30 +77,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         })
     });
 
-    filteredEvts.sort((a, b) => a.timestamp >= b.timestamp ? 1 : -1)
-
-    let running = 0;
-    if (balance !== '' && balance !== null && balance !== undefined) {
-        const parsedBalance = parseFloat(balance);
-        running = isNaN(parsedBalance) ? 0 : parsedBalance;
-    }
-    filteredEvts.map((evt) => {
-        const amount = parseFloat(evt.amount);
-        if (isNaN(amount)) {
-            console.warn('Invalid amount for event:', evt.title, evt.amount);
-            return;
-        }
-        
-        if (evt.type === 'bill' || evt.type === 'cc_payment') {
-            running -= amount;
-        } else {
-            running += amount;
-        }
-        evt.running = running.toFixed(2);
-    });
-
-
-    return filteredEvts;
+    return applyRunningBalance(filteredEvts, balance);
 };
 
 export default getCurrentEvents;
