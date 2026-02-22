@@ -23,5 +23,4 @@ accounts-github@1.5.1
 accounts-base@3.1.1
 oauth@3.0.2
 accounts-google@1.4.1
-force-ssl@1.1.1
 zodern:types
