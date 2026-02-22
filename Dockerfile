@@ -1,7 +1,7 @@
 # Build stage
 FROM node:22 AS build
 RUN curl https://install.meteor.com/ | sh
-ENV PATH="/root/.meteor:${PATH}"
+ENV PATH="/root/.meteor:${PATH}" METEOR_ALLOW_SUPERUSER=1
 WORKDIR /app
 COPY . .
 RUN meteor npm install
