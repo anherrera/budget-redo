@@ -1,5 +1,7 @@
 # Build stage
-FROM geoffreybooth/meteor-base:3.3 AS build
+FROM node:22 AS build
+RUN curl https://install.meteor.com/ | sh
+ENV PATH="/root/.meteor:${PATH}"
 WORKDIR /app
 COPY . .
 RUN meteor npm install
