@@ -1,0 +1,24 @@
+services:
+  app:
+    image: ghcr.io/anherrera/budget-redo:latest
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      - ROOT_URL=https://budget.yourdomain.com
+      - MONGO_URL=mongodb://mongo:27017/budget
+      - PORT=3000
+      - HTTP_FORWARDED_COUNT=1
+    depends_on:
+      mongo:
+        condition: service_started
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:

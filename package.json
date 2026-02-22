@@ -21,7 +21,6 @@
     "apexcharts": "^3.52.0",
     "bcrypt": "^5.1.1",
     "elliptic": "^6.6.1",
-    "force-ssl-heroku": "^1.0.2",
     "luxon": "^3.5.0",
     "meteor": "^3.0.2",
     "meteor-node-stubs": "^1.2.9",
