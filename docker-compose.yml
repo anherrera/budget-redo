@@ -6,9 +6,10 @@ services:
       - "3000:3000"
     env_file: .env
     environment:
-      - ROOT_URL=http://paloma.local:3000
+      - ROOT_URL=https://budget.tunnelmy.app
       - MONGO_URL=mongodb://mongo:27017/budget
       - PORT=3000
+      - HTTP_FORWARDED_COUNT=1
     depends_on:
       mongo:
         condition: service_started
