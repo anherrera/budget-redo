@@ -1,14 +1,14 @@
 services:
   app:
-    image: ghcr.io/anherrera/budget-redo:latest
+    build: .
+    image: budget-redo:latest
     ports:
       - "3000:3000"
     env_file: .env
     environment:
-      - ROOT_URL=https://budget.yourdomain.com
+      - ROOT_URL=http://paloma.local:3000
       - MONGO_URL=mongodb://mongo:27017/budget
       - PORT=3000
-      - HTTP_FORWARDED_COUNT=1
     depends_on:
       mongo:
         condition: service_started
