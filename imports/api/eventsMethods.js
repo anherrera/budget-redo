@@ -138,9 +138,14 @@ const standardizeEvent = (evt, userId) => {
         evtObj.weekdays = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR].toString();
     } else {
         if (evtObj.weekdays) {
-            // keep any computed value (e.g. default weekly weekday)
+            // Normalize to comma-separated string (form sends arrays from multi-select)
+            evtObj.weekdays = Array.isArray(evtObj.weekdays)
+                ? evtObj.weekdays.join(',')
+                : String(evtObj.weekdays);
         } else if (evt.weekdays) {
-            evtObj.weekdays = evt.weekdays.toString();
+            evtObj.weekdays = Array.isArray(evt.weekdays)
+                ? evt.weekdays.join(',')
+                : String(evt.weekdays);
         } else {
             evtObj.weekdays = '';
         }

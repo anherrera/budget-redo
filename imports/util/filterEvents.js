@@ -28,8 +28,9 @@ const getCurrentEvents = (user, start, end, balance) => {
             weekdays = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR].map((i) => i.toString());
         } else {
             if (evt.weekdays) {
-                weekdaysArray = evt.weekdays !== "" ? evt.weekdays.split(",").map((w) => Weekday.fromStr(w)) : [];
-                weekdays = evt.weekdays !== "" ? evt.weekdays.split(",") : [];
+                const weekdayStr = Array.isArray(evt.weekdays) ? evt.weekdays.join(',') : String(evt.weekdays);
+                weekdaysArray = weekdayStr !== "" ? weekdayStr.split(",").map((w) => Weekday.fromStr(w)) : [];
+                weekdays = weekdayStr !== "" ? weekdayStr.split(",") : [];
             }
         }
 
