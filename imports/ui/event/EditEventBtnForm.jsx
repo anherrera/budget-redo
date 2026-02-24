@@ -29,7 +29,9 @@ const EditEventButton = ({event}) => {
     const [resetEvent, setResetEvent] = useState(toFormEvent(event));
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
-    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(
+        () => !!(event.setPos > 1 || event.lastDayOfMonth || (event.weekdays && event.weekdays.length) || event.weekdaysOnly)
+    );
 
     const isEditingEvent = '_id' in event;
 
