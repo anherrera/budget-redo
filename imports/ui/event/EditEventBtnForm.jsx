@@ -154,7 +154,7 @@ const EditEventButton = ({event}) => {
 
                         {/* ── Details ── */}
                         <Divider sx={{ flexBasis: '100%' }} />
-                        <Typography variant="overline">Details</Typography>
+                        <Typography variant="overline" component="div">Details</Typography>
 
                         <TextField className="half" disabled={submitting} name="title" onChange={handleChange}
                                    value={formData.title} label="Title" required/>
@@ -204,7 +204,7 @@ const EditEventButton = ({event}) => {
 
                         {/* ── Schedule ── */}
                         <Divider sx={{ flexBasis: '100%' }} />
-                        <Typography variant="overline">Schedule</Typography>
+                        <Typography variant="overline" component="div">Schedule</Typography>
 
                         <FormControlLabel control={<Checkbox disabled={submitting} name="recurring"
                                                              checked={formData.recurring} onChange={handleChange}/>}
