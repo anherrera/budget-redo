@@ -108,9 +108,9 @@ const standardizeEvent = (evt, userId) => {
     evtObj.autoPay = !!evt.autoPay;
     evtObj.setPos = evt.setPos === '' || evt.setPos === undefined ? 1 : toIntegerOr(evt.setPos, 1);
     evtObj.until = evt.until || '';
-    evtObj.ccStatement = {
-        statementDate: evt.ccStatement?.statementDate || null
-    };
+    evtObj.statementDate = evt.statementDate || evt.ccStatement?.statementDate || null;
+    evtObj.variableAmount = !!evt.variableAmount;
+    delete evtObj.ccStatement;
 
     // if the event is weekly and no weekdays are selected, set the weekday to the day of the week
     // if only one weekday is selected, set the weekday to the new day, for convenience
@@ -154,6 +154,19 @@ const standardizeEvent = (evt, userId) => {
     return evtObj;
 }
 
+const migrateStatementDateToTopLevel = async () => {
+    const candidates = await EventsCollection.find({
+        ccStatement: { $exists: true }
+    }).fetchAsync();
+
+    for (const evt of candidates) {
+        await EventsCollection.updateAsync(evt._id, {
+            $set: { statementDate: evt.ccStatement?.statementDate || null },
+            $unset: { ccStatement: '' }
+        });
+    }
+};
+
 const migrateAmountsToCents = async () => {
     const candidates = await EventsCollection.find({
         $or: [{ amountCents: { $exists: false } }, { amountCents: null }],
@@ -177,6 +190,7 @@ const migrateAmountsToCents = async () => {
 
 Meteor.startup(async () => {
     await migrateAmountsToCents();
+    await migrateStatementDateToTopLevel();
 });
 
 Meteor.methods({
@@ -228,11 +242,9 @@ Meteor.methods({
         await EventsCollection.removeAsync(eventId);
     },
 
-    async 'events.updateCCStatement'(eventId, ccStatementData) {
+    async 'events.updateStatementDate'(eventId, statementDate) {
         check(eventId, String);
-        check(ccStatementData, {
-            statementDate: Match.Maybe(String)
-        });
+        check(statementDate, Match.Maybe(String));
 
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
@@ -245,9 +257,7 @@ Meteor.methods({
         }
 
         await EventsCollection.updateAsync(eventId, {
-            $set: {
-                ccStatement: ccStatementData
-            }
+            $set: { statementDate }
         });
     }
 });

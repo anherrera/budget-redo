@@ -78,22 +78,10 @@ const EditEventButton = ({event}) => {
             setTimePeriod(time);
         }
 
-        // Handle nested properties like ccStatement.actualBalance
-        if (name.includes('.')) {
-            const [parent, child] = name.split('.');
-            setFormData({
-                name: parent,
-                value: {
-                    ...formData[parent],
-                    [child]: isCheckbox ? checked : value
-                }
-            });
-        } else {
-            setFormData({
-                name: name,
-                value: isCheckbox ? checked : value,
-            });
-        }
+        setFormData({
+            name: name,
+            value: isCheckbox ? checked : value,
+        });
     }
 
     const handleSubmit = async (e) => {
@@ -152,14 +140,19 @@ const EditEventButton = ({event}) => {
                                    label={formData.recurring ? 'starting on' : 'on'} type="date" name="startdate" value={formData.startdate}
                                    onChange={handleChange} required/>
 
-                        {formData.type === 'cc_payment' && (
-                            <TextField 
-                                disabled={submitting} 
-                                name="ccStatement.statementDate" 
-                                value={formData.ccStatement?.statementDate || ''} 
+                        {formData.type === 'bill' && (
+                            <FormControlLabel control={<Checkbox disabled={submitting} name="variableAmount"
+                                checked={!!formData.variableAmount} onChange={handleChange} />} label="Variable amount?" />
+                        )}
+
+                        {(formData.type === 'cc_payment' || (formData.type === 'bill' && formData.variableAmount)) && (
+                            <TextField
+                                disabled={submitting}
+                                name="statementDate"
+                                value={formData.statementDate || ''}
                                 type="date"
                                 variant="filled"
-                                onChange={handleChange} 
+                                onChange={handleChange}
                                 label="Due Date"
                             />
                         )}

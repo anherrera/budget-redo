@@ -45,15 +45,15 @@ const columns = [
             const event = params.row;
             const amount = moneyFromCents(params.value);
             
-            if (event.type === 'cc_payment' && event.ccStatement?.statementDate) {
-                const statementDate = new Date(event.ccStatement.statementDate + 'T00:00:00').toLocaleDateString('en-US', {
+            if (event.statementDate && (event.type === 'cc_payment' || (event.type === 'bill' && event.variableAmount))) {
+                const statementDate = new Date(event.statementDate + 'T00:00:00').toLocaleDateString('en-US', {
                     month: '2-digit',
                     day: '2-digit',
                     year: 'numeric'
                 });
                 return (
                     <Tooltip title={`Due Date: ${statementDate}`} arrow>
-                        <span className="cc-amount-with-due">{amount}</span>
+                        <span className="amount-with-due">{amount}</span>
                     </Tooltip>
                 );
             }

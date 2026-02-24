@@ -22,9 +22,8 @@ const baseEvent = (overrides = {}) => ({
   weekdaysOnly: false,
   until: "",
   autoPay: false,
-  ccStatement: {
-    statementDate: null,
-  },
+  statementDate: null,
+  variableAmount: false,
   ...overrides,
 });
 

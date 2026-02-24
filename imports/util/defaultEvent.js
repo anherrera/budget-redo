@@ -15,9 +15,8 @@ const defaultEvent = {
     weekdaysOnly: false,
     until: '',
     autoPay: false,
-    ccStatement: {
-        statementDate: null
-    }
+    statementDate: null,
+    variableAmount: false
 }
 
 export default defaultEvent;

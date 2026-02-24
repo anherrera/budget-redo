@@ -7,7 +7,7 @@ import "../imports/api/eventsMethods";
 const insertMethod = () => Meteor.server.method_handlers["events.insertAsync"];
 const editMethod = () => Meteor.server.method_handlers["events.edit"];
 const removeMethod = () => Meteor.server.method_handlers["events.removeAsync"];
-const updateCCMethod = () => Meteor.server.method_handlers["events.updateCCStatement"];
+const updateStatementDateMethod = () => Meteor.server.method_handlers["events.updateStatementDate"];
 
 const validEvent = (overrides = {}) => ({
   title: "Rent",
@@ -23,9 +23,8 @@ const validEvent = (overrides = {}) => ({
   weekdaysOnly: false,
   until: "",
   autoPay: false,
-  ccStatement: {
-    statementDate: null,
-  },
+  statementDate: null,
+  variableAmount: false,
   ...overrides,
 });
 
@@ -167,7 +166,7 @@ if (Meteor.isServer) {
       assert.strictEqual(saved, undefined);
     });
 
-    it("updates cc statement metadata for owner only", async function () {
+    it("updates statement date for owner only", async function () {
       const eventId = await EventsCollection.insertAsync({
         ...validEvent({ type: "cc_payment" }),
         amountCents: 4200,
@@ -177,19 +176,19 @@ if (Meteor.isServer) {
 
       await expectMeteorError(
         async () =>
-          updateCCMethod().apply(
+          updateStatementDateMethod().apply(
             { userId: "other-user" },
-            [eventId, { statementDate: "2026-02-15" }]
+            [eventId, "2026-02-15"]
           ),
         "Not authorized."
       );
 
-      await updateCCMethod().apply(
+      await updateStatementDateMethod().apply(
         { userId: "owner-user" },
-        [eventId, { statementDate: "2026-02-15" }]
+        [eventId, "2026-02-15"]
       );
       const saved = await EventsCollection.findOneAsync({ _id: eventId });
-      assert.strictEqual(saved.ccStatement.statementDate, "2026-02-15");
+      assert.strictEqual(saved.statementDate, "2026-02-15");
     });
   });
 }

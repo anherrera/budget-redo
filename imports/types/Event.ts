@@ -1,10 +1,5 @@
 import { RRule } from 'rrule';
 
-export interface CCStatement {
-  statementDate?: string;
-  actualBalance?: string;
-}
-
 export interface Event {
   _id?: string;
   title: string;
@@ -18,7 +13,8 @@ export interface Event {
   lastDayOfMonth?: boolean;
   weekdaysOnly?: boolean;
   weekdays?: string; // Comma-separated RRule weekday constants
-  ccStatement?: CCStatement;
+  statementDate?: string | null;
+  variableAmount?: boolean;
   userId?: string;
   createdAt?: number;
   updatedAt?: number;

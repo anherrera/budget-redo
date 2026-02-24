@@ -12,9 +12,8 @@ const defaultEvent: Partial<Event> = {
     lastDayOfMonth: false,
     weekdays: '',
     weekdaysOnly: false,
-    ccStatement: {
-        statementDate: undefined
-    }
+    statementDate: null,
+    variableAmount: false
 }
 
 export default defaultEvent;
