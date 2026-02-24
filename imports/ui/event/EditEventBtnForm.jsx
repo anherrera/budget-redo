@@ -98,8 +98,8 @@ const EditEventButton = ({event}) => {
                 byweekday: weekdaysArray
             };
 
-            if (formData.lastDayOfMonth === true || formData.setPos) {
-                ruleOpts.bysetpos = formData.lastDayOfMonth ? -1 : parseInt(formData.setPos);
+            if (formData.frequency === RRule.MONTHLY && (formData.lastDayOfMonth === true || formData.setPos)) {
+                ruleOpts.bymonthday = [formData.lastDayOfMonth ? -1 : parseInt(formData.setPos)];
             }
             if (formData.until) {
                 ruleOpts.until = new Date(formData.until + 'T00:00:00');
