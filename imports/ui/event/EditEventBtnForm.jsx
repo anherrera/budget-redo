@@ -168,7 +168,7 @@ const EditEventButton = ({event}) => {
                                           label="recurring item?"/>
 
                         <Collapse in={!!formData.recurring}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '15px 2%' }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '15px 2%', '& > *': { flexBasis: '100%' }, '& > .half': { flexBasis: '46%' } }}>
                                 <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
                                            value={parseInt(formData.interval, 10) || 1} type="number" onChange={handleChange} label="every" inputProps={{min: 1}}/>
                                 <FormControl className="half" disabled={submitting || !formData.recurring}>
