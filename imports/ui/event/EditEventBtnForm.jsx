@@ -97,7 +97,7 @@ const EditEventButton = ({event}) => {
                 wkst: RRule.SU,
                 interval: parseInt(formData.interval) || 1,
                 freq: formData.frequency,
-                byweekday: weekdaysArray
+                byweekday: formData.weekdaysOnly ? [] : weekdaysArray
             };
 
             if (formData.frequency === RRule.MONTHLY && (formData.lastDayOfMonth === true || formData.setPos)) {
@@ -107,7 +107,9 @@ const EditEventButton = ({event}) => {
                 ruleOpts.until = new Date(formData.until + 'T00:00:00');
             }
 
-            return new RRule(ruleOpts).toText();
+            let text = new RRule(ruleOpts).toText();
+            if (formData.weekdaysOnly) text += ', on weekdays';
+            return text;
         } catch {
             return null;
         }
