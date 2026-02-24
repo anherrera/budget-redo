@@ -3,7 +3,7 @@ services:
     build: .
     image: budget-redo:latest
     ports:
-      - "3200:3000"
+      - "3001:3000"
     env_file: .env
     environment:
       - ROOT_URL=https://budget.tunnelmy.app
