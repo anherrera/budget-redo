@@ -12,18 +12,24 @@ export const LoginWithGithub = () => {
     };
 
     return (
-        <Button 
-            variant="contained" 
-            type="button" 
-            onClick={handleGithubLogin} 
+        <Button
+            variant="contained"
+            type="button"
+            onClick={handleGithubLogin}
             startIcon={<GitHub />}
             fullWidth
             size="large"
-            sx={{ 
-                bgcolor: '#24292e', 
+            sx={{
+                bgcolor: '#24292e',
                 color: 'white',
-                '&:hover': { bgcolor: '#1a1e22' },
-                py: 1.5
+                borderRadius: 2,
+                py: 1.5,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': {
+                    bgcolor: '#1a1e22',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(36,41,46,0.4)',
+                },
             }}
         >
             Continue with GitHub

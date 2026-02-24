@@ -11,18 +11,24 @@ export const LoginWithGoogle = () => {
     };
 
     return (
-        <Button 
-            variant="contained" 
-            type="button" 
-            onClick={handleGoogleLogin} 
+        <Button
+            variant="contained"
+            type="button"
+            onClick={handleGoogleLogin}
             startIcon={<Google />}
             fullWidth
             size="large"
-            sx={{ 
-                bgcolor: '#4285f4', 
+            sx={{
+                bgcolor: '#4285f4',
                 color: 'white',
-                '&:hover': { bgcolor: '#3367d6' },
-                py: 1.5
+                borderRadius: 2,
+                py: 1.5,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': {
+                    bgcolor: '#3367d6',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(66,133,244,0.4)',
+                },
             }}
         >
             Continue with Google

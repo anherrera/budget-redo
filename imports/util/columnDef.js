@@ -9,6 +9,8 @@ const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", curren
 const moneyFromCents = (cents) => money((cents || 0) / 100);
 const deleteEvent = ({_id}) => Meteor.call('events.removeAsync', _id);
 
+const monoSx = { fontFamily: '"JetBrains Mono", monospace', fontWeight: 500 };
+
 const columns = [
     {
         field: 'title',
@@ -29,7 +31,7 @@ const columns = [
                 cc_payment: { label: 'Credit Card', color: 'warning' },
             };
             const config = typeMap[params.value] || { label: params.value, color: 'default' };
-            return <Chip label={config.label} color={config.color} size="small" variant="outlined" />;
+            return <Chip label={config.label} color={config.color} size="small" variant="filled" sx={{ letterSpacing: '0.03em' }} />;
         }
     },
     {
@@ -53,7 +55,7 @@ const columns = [
         renderCell: (params) => {
             const event = params.row;
             const amount = moneyFromCents(params.value);
-            
+
             if (event.statementDate && (event.type === 'cc_payment' || (event.type === 'bill' && event.variableAmount))) {
                 const statementDate = new Date(event.statementDate + 'T00:00:00').toLocaleDateString('en-US', {
                     month: '2-digit',
@@ -66,8 +68,8 @@ const columns = [
                     </Tooltip>
                 );
             }
-            
-            return <span className="monospace">{amount}</span>;
+
+            return <span style={monoSx}>{amount}</span>;
         }
     },
     {
@@ -78,8 +80,10 @@ const columns = [
         align: "right",
         headerAlign: "right",
         renderCell: (params) => {
+            const val = parseFloat(params.value);
             const amount = money(params.value);
-            return <span className="monospace">{amount}</span>;
+            const color = val < 0 ? '#ef5350' : val <= 200 ? '#ff9800' : undefined;
+            return <span style={{ ...monoSx, color }}>{amount}</span>;
         }
     },
     {

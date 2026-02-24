@@ -9,25 +9,31 @@ import {
     Box,
     Card,
     CardContent,
+    Chip,
     CircularProgress,
     Container,
-    createTheme,
+    CssBaseline,
     Divider,
     Grid,
     TextField,
     ThemeProvider,
     Typography
 } from "@mui/material";
+import {
+    CalendarMonth,
+    ReceiptLong,
+    AccountBalance,
+    TrendingUp,
+} from "@mui/icons-material";
 import {DataGrid} from "@mui/x-data-grid";
 import EditEventBtnForm from "./event/EditEventBtnForm";
-
-
 
 import columns from '../util/columnDef';
 import defaultEvent from '../util/defaultEvent';
 import getCurrentEvents from "../util/filterEvents";
-import { deepPurple, teal, grey } from '@mui/material/colors';
+import { deepPurple, teal } from '@mui/material/colors';
 import {RunningChart} from "./RunningChart";
+import {getTheme} from "./theme";
 
 
 export const App = () => {
@@ -105,19 +111,42 @@ export const App = () => {
         };
     }, [evtsFlat]);
 
-    const runningOptions = {
+    const runningOptions = useMemo(() => ({
         chart: {
             id: 'runningChart',
-            background: 'transparent'
+            background: 'transparent',
+            toolbar: { show: false },
+            dropShadow: {
+                enabled: true,
+                top: 3,
+                left: 0,
+                blur: 6,
+                color: darkMode ? deepPurple[300] : deepPurple[500],
+                opacity: 0.25,
+            },
         },
         theme: {
-            mode: darkMode ? 'dark' : 'light'
+            mode: darkMode ? 'dark' : 'light',
         },
-        plotOptions: {
-            dataLabels: {
-                enabled: false
-            }
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.45,
+                opacityTo: 0.05,
+                stops: [0, 90, 100],
+                colorStops: [{
+                    offset: 0,
+                    color: darkMode ? deepPurple[300] : deepPurple[500],
+                    opacity: 0.4,
+                }, {
+                    offset: 100,
+                    color: darkMode ? deepPurple[300] : deepPurple[500],
+                    opacity: 0.02,
+                }],
+            },
         },
+        dataLabels: { enabled: false },
         xaxis: {
             categories: chartCategories,
             type: 'datetime',
@@ -125,25 +154,57 @@ export const App = () => {
                 rotate: -45,
                 style: {
                     fontSize: '10px',
-                    colors: darkMode ? '#e0e0e0' : '#424242'
-                }
-            }
+                    fontFamily: '"Inter", sans-serif',
+                    colors: darkMode ? '#bdbdbd' : '#616161',
+                },
+            },
+            axisBorder: { show: false },
         },
         yaxis: {
             min: min < 0 ? min : 0,
             labels: {
+                formatter: (val) => `$${val?.toLocaleString() ?? '0'}`,
                 style: {
-                    colors: darkMode ? '#e0e0e0' : '#424242'
-                }
-            }
+                    fontSize: '11px',
+                    fontFamily: '"JetBrains Mono", monospace',
+                    colors: darkMode ? '#bdbdbd' : '#616161',
+                },
+            },
         },
         grid: {
-            borderColor: darkMode ? '#424242' : '#e0e0e0'
+            borderColor: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+            strokeDashArray: 4,
         },
         stroke: {
-            colors: [darkMode ? deepPurple[300] : deepPurple[500]]
-        }
-    };
+            curve: 'smooth',
+            width: 2.5,
+            colors: [darkMode ? deepPurple[300] : deepPurple[500]],
+        },
+        markers: {
+            size: 0,
+            hover: { size: 5 },
+        },
+        tooltip: {
+            y: {
+                formatter: (val) => `$${val?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}`,
+            },
+        },
+        annotations: min < 0 ? {
+            yaxis: [{
+                y: 0,
+                borderColor: darkMode ? '#ef5350' : '#d32f2f',
+                strokeDashArray: 3,
+                label: {
+                    text: 'Zero',
+                    style: {
+                        color: '#fff',
+                        background: darkMode ? '#ef5350' : '#d32f2f',
+                        fontSize: '10px',
+                    },
+                },
+            }],
+        } : {},
+    }), [darkMode, chartCategories, min]);
 
     const evaluateMath = useCallback((expression) => {
         try {
@@ -210,87 +271,7 @@ export const App = () => {
         setDarkMode(prev => !prev);
     }, []);
 
-    const theme = createTheme({
-        palette: {
-            mode: darkMode ? 'dark' : 'light',
-            primary: {
-                main: darkMode ? deepPurple[300] : deepPurple[500],
-                light: darkMode ? deepPurple[200] : deepPurple[300],
-                dark: darkMode ? deepPurple[400] : deepPurple[700],
-            },
-            secondary: {
-                main: darkMode ? teal[300] : teal[500],
-                light: darkMode ? teal[200] : teal[300],
-                dark: darkMode ? teal[400] : teal[700],
-            },
-            background: {
-                default: darkMode ? grey[900] : grey[50],
-                paper: darkMode ? grey[800] : '#ffffff',
-            },
-            text: {
-                primary: darkMode ? grey[100] : grey[900],
-                secondary: darkMode ? grey[400] : grey[600],
-            },
-        },
-        typography: {
-            fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-            h6: {
-                fontWeight: 600,
-            },
-        },
-        shape: {
-            borderRadius: 12,
-        },
-        components: {
-            MuiCard: {
-                styleOverrides: {
-                    root: {
-                        boxShadow: darkMode 
-                            ? '0px 2px 8px rgba(0, 0, 0, 0.3)' 
-                            : '0px 2px 8px rgba(0, 0, 0, 0.08)',
-                        border: darkMode 
-                            ? '1px solid rgba(255, 255, 255, 0.1)' 
-                            : '1px solid rgba(0, 0, 0, 0.05)',
-                    },
-                },
-            },
-            MuiTextField: {
-                styleOverrides: {
-                    root: {
-                        '& .MuiOutlinedInput-root': {
-                            borderRadius: 8,
-                        },
-                    },
-                },
-            },
-            MuiDataGrid: {
-                styleOverrides: {
-                    row: {
-                        '&.error': {
-                            backgroundColor: darkMode 
-                                ? 'rgba(244, 67, 54, 0.15)' 
-                                : 'rgba(244, 67, 54, 0.1)',
-                        },
-                        '&.warning': {
-                            backgroundColor: darkMode 
-                                ? 'rgba(255, 193, 7, 0.15)' 
-                                : 'rgba(255, 193, 7, 0.1)',
-                        },
-                    },
-                },
-            },
-            MuiAppBar: {
-                styleOverrides: {
-                    root: {
-                        backgroundColor: darkMode ? deepPurple[600] : deepPurple[500],
-                        '&.MuiAppBar-colorPrimary': {
-                            backgroundColor: darkMode ? deepPurple[600] : deepPurple[500],
-                        },
-                    },
-                },
-            },
-        },
-    });
+    const theme = useMemo(() => getTheme(darkMode), [darkMode]);
 
     const rowStyle = (record) => {
         const running = parseFloat(record.row.running);
@@ -298,9 +279,31 @@ export const App = () => {
         if (running <= 200) return 'warning';
         return ''; // No special styling for normal positive balances
     };
+    const fmtMoney = (val) => `$${(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    const AccentBar = ({ gradient }) => (
+        <Box sx={{ height: 3, background: gradient, borderRadius: '12px 12px 0 0' }} />
+    );
+
+    const SectionTitle = ({ icon, title, chip }) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {icon}
+            <Typography variant="subtitle1" color="text.primary" fontWeight={600}>{title}</Typography>
+            {chip}
+        </Box>
+    );
+
     return (
         <ThemeProvider theme={theme}>
-            <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 1.5 }}>
+            <CssBaseline />
+            <Box sx={{
+                bgcolor: 'background.default',
+                minHeight: '100vh',
+                py: 1.5,
+                background: darkMode
+                    ? `radial-gradient(ellipse at 10% 0%, rgba(103,58,183,0.10) 0%, transparent 50%), ${theme.palette.background.default}`
+                    : `radial-gradient(ellipse at 10% 0%, rgba(103,58,183,0.06) 0%, transparent 50%), ${theme.palette.background.default}`,
+            }}>
                 <Container maxWidth="xl">
                     <Grid container spacing={2}>
                     {loggingIn ? null : user ? (
@@ -312,26 +315,40 @@ export const App = () => {
                                 <Grid container spacing={2}>
                                     <Grid item md={12}>
                                         <Card>
+                                            <AccentBar gradient={theme.palette.gradient.secondary} />
                                             <CardContent sx={{ py: 2 }}>
-                                                <Typography variant="subtitle1" gutterBottom color="text.primary" fontWeight={600}>
-                                                    Date Range
-                                                </Typography>
-                                                <DateRangeForm
-                                                    start={start}
-                                                    end={end}
-                                                    setStart={setStart}
-                                                    setEnd={setEnd}
-                                                />
+                                                <SectionTitle icon={<CalendarMonth fontSize="small" color="secondary" />} title="Date Range" />
+                                                <Box sx={{ mt: 1.5 }}>
+                                                    <DateRangeForm
+                                                        start={start}
+                                                        end={end}
+                                                        setStart={setStart}
+                                                        setEnd={setEnd}
+                                                    />
+                                                </Box>
                                             </CardContent>
                                         </Card>
                                     </Grid>
                                     <Grid item md={12}>
                                         <Card>
+                                            <AccentBar gradient={theme.palette.gradient.primary} />
                                             <CardContent sx={{ p: 0 }}>
-                                                <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Typography variant="subtitle1" color="text.primary" fontWeight={600}>
-                                                        Transactions
-                                                    </Typography>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    borderBottom: '1px solid',
+                                                    borderColor: 'divider',
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    background: darkMode
+                                                        ? 'linear-gradient(180deg, rgba(103,58,183,0.08) 0%, transparent 100%)'
+                                                        : 'linear-gradient(180deg, rgba(103,58,183,0.04) 0%, transparent 100%)',
+                                                }}>
+                                                    <SectionTitle
+                                                        icon={<ReceiptLong fontSize="small" color="primary" />}
+                                                        title="Transactions"
+                                                        chip={evtsFlat.length > 0 ? <Chip label={evtsFlat.length} size="small" color="primary" variant="filled" sx={{ height: 20, fontSize: '0.7rem' }} /> : null}
+                                                    />
                                                     <EditEventBtnForm event={defaultEvent} />
                                                 </Box>
                                                 <Box sx={{height: '70vh', width: '100%', minHeight: 400}}>
@@ -363,19 +380,18 @@ export const App = () => {
                                 <Grid container spacing={2}>
                                     <Grid item xs={12}>
                                         <Card>
+                                            <AccentBar gradient={theme.palette.gradient.hero} />
                                             <CardContent sx={{ py: 2 }}>
-                                                <Typography variant="subtitle1" gutterBottom color="text.primary" fontWeight={600}>
-                                                    Current Balance
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                <SectionTitle icon={<AccountBalance fontSize="small" color="primary" />} title="Current Balance" />
+                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
                                                     Enter your current account balance to see how your budget will play out over time.
                                                 </Typography>
-                                                <TextField 
-                                                    fullWidth 
-                                                    label="Current Balance" 
-                                                    onChange={handleRunningChange} 
-                                                    onBlur={handleRunningBlur} 
-                                                    value={inputValue} 
+                                                <TextField
+                                                    fullWidth
+                                                    label="Current Balance"
+                                                    onChange={handleRunningChange}
+                                                    onBlur={handleRunningBlur}
+                                                    value={inputValue}
                                                     placeholder="Enter amount or math (e.g., 1345+123)"
                                                     variant="outlined"
                                                 />
@@ -385,40 +401,73 @@ export const App = () => {
 
                                     <Grid item xs={12}>
                                         <Card>
+                                            <AccentBar gradient={theme.palette.gradient.primary} />
                                             <CardContent sx={{ py: 2 }}>
-                                                <Typography variant="subtitle1" gutterBottom color="text.primary" fontWeight={600}>
-                                                    Summary
-                                                </Typography>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                    <Typography variant="body1" color="text.secondary">Income:</Typography>
-                                                    <Typography variant="body1" fontWeight={600} color="success.main" fontFamily="monospace">
-                                                        ${income.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </Typography>
+                                                <SectionTitle icon={<AccountBalance fontSize="small" color="primary" />} title="Summary" />
+                                                <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                    {/* Income row */}
+                                                    <Box sx={{
+                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                        p: 1, borderRadius: 1,
+                                                        borderLeft: '3px solid',
+                                                        borderColor: 'success.main',
+                                                        bgcolor: darkMode ? 'rgba(102,187,106,0.06)' : 'rgba(46,125,50,0.04)',
+                                                    }}>
+                                                        <Typography variant="body2" color="text.secondary">Income</Typography>
+                                                        <Typography variant="body1" fontWeight={600} color="success.main" fontFamily='"JetBrains Mono", monospace'>
+                                                            {fmtMoney(income)}
+                                                        </Typography>
+                                                    </Box>
+                                                    {/* Expenses row */}
+                                                    <Box sx={{
+                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                        p: 1, borderRadius: 1,
+                                                        borderLeft: '3px solid',
+                                                        borderColor: 'error.main',
+                                                        bgcolor: darkMode ? 'rgba(239,83,80,0.06)' : 'rgba(211,47,47,0.04)',
+                                                    }}>
+                                                        <Typography variant="body2" color="text.secondary">Expenses</Typography>
+                                                        <Typography variant="body1" fontWeight={600} color="error.main" fontFamily='"JetBrains Mono", monospace'>
+                                                            {fmtMoney(expenses)}
+                                                        </Typography>
+                                                    </Box>
+                                                    {/* Net row */}
+                                                    <Box sx={{
+                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                        p: 1, borderRadius: 1,
+                                                        borderLeft: '3px solid',
+                                                        borderColor: 'primary.main',
+                                                        bgcolor: darkMode ? 'rgba(103,58,183,0.08)' : 'rgba(103,58,183,0.04)',
+                                                    }}>
+                                                        <Typography variant="body2" fontWeight={600} color="text.primary">Net</Typography>
+                                                        <Typography variant="body1" fontWeight={700} color={income - expenses >= 0 ? 'success.main' : 'error.main'} fontFamily='"JetBrains Mono", monospace'>
+                                                            {fmtMoney(income - expenses)}
+                                                        </Typography>
+                                                    </Box>
                                                 </Box>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                    <Typography variant="body1" color="text.secondary">Expenses:</Typography>
-                                                    <Typography variant="body1" fontWeight={600} color="error.main" fontFamily="monospace">
-                                                        ${expenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </Typography>
-                                                </Box>
-                                                <Divider sx={{ my: 1 }} />
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                                    <Typography variant="body1" fontWeight={600} color="text.primary">Net:</Typography>
-                                                    <Typography variant="body1" fontWeight={700} color={income - expenses >= 0 ? 'success.main' : 'error.main'} fontFamily="monospace">
-                                                        ${(income - expenses).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                    <Typography variant="body1" color="text.secondary">Lowest Balance:</Typography>
-                                                    <Typography variant="body1" fontWeight={500} fontFamily="monospace">
-                                                        ${(min || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                    <Typography variant="body1" color="text.secondary">Highest Balance:</Typography>
-                                                    <Typography variant="body1" fontWeight={500} fontFamily="monospace">
-                                                        ${(max || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </Typography>
+                                                <Divider sx={{ my: 1.5 }} />
+                                                {/* Min/Max side by side */}
+                                                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                                    <Box sx={{
+                                                        flex: 1, textAlign: 'center', p: 1.5, borderRadius: 1,
+                                                        border: '1px solid',
+                                                        borderColor: min < 0 ? 'error.light' : 'divider',
+                                                    }}>
+                                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Lowest</Typography>
+                                                        <Typography variant="body1" fontWeight={600} fontFamily='"JetBrains Mono", monospace' color={min < 0 ? 'error.main' : 'text.primary'}>
+                                                            {fmtMoney(min)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{
+                                                        flex: 1, textAlign: 'center', p: 1.5, borderRadius: 1,
+                                                        border: '1px solid',
+                                                        borderColor: 'divider',
+                                                    }}>
+                                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Highest</Typography>
+                                                        <Typography variant="body1" fontWeight={600} fontFamily='"JetBrains Mono", monospace'>
+                                                            {fmtMoney(max)}
+                                                        </Typography>
+                                                    </Box>
                                                 </Box>
                                             </CardContent>
                                         </Card>
@@ -427,11 +476,12 @@ export const App = () => {
                                     {evtsFlat.length > 0 && (
                                         <Grid item xs={12}>
                                             <Card>
+                                                <AccentBar gradient={theme.palette.gradient.primary} />
                                                 <CardContent sx={{ py: 2 }}>
-                                                    <Typography variant="subtitle1" gutterBottom color="text.primary" fontWeight={600}>
-                                                        Balance Trend
-                                                    </Typography>
-                                                    <RunningChart options={runningOptions} series={series} />
+                                                    <SectionTitle icon={<TrendingUp fontSize="small" color="primary" />} title="Balance Trend" />
+                                                    <Box sx={{ mt: 1 }}>
+                                                        <RunningChart options={runningOptions} series={series} />
+                                                    </Box>
                                                 </CardContent>
                                             </Card>
                                         </Grid>
@@ -441,11 +491,24 @@ export const App = () => {
                         </>
                     ) : (
                         <Grid item xs={12}>
-                            <Card sx={{ maxWidth: 400, mx: 'auto', mt: 8 }}>
-                                <CardContent>
-                                    <LoginForm/>
-                                </CardContent>
-                            </Card>
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                minHeight: '80vh',
+                            }}>
+                                <Card sx={{
+                                    maxWidth: 420,
+                                    width: '100%',
+                                    border: '1px solid',
+                                    borderColor: darkMode ? 'rgba(103,58,183,0.3)' : 'rgba(103,58,183,0.15)',
+                                }}>
+                                    <AccentBar gradient={theme.palette.gradient.hero} />
+                                    <CardContent>
+                                        <LoginForm/>
+                                    </CardContent>
+                                </Card>
+                            </Box>
                         </Grid>
                     )}
                     </Grid>

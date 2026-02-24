@@ -29,13 +29,13 @@ input[type="date"]:focus::-webkit-datetime-edit-text {
 
 /* Table cell styles */
 .monospace {
-    font-family: monospace;
+    font-family: "JetBrains Mono", monospace;
 }
 
 .amount-with-due {
     cursor: help;
-    font-family: monospace;
+    font-family: "JetBrains Mono", monospace;
     text-decoration: underline;
     text-decoration-style: dotted;
+    text-underline-offset: 3px;
 }
-

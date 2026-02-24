@@ -9,9 +9,9 @@ import {
     Dialog,
     DialogTitle,
     Divider,
-    FormControl, FormControlLabel, InputLabel, Link, MenuItem, Select, Snackbar, TextField, Tooltip, Typography
+    FormControl, FormControlLabel, IconButton, InputLabel, Link, MenuItem, Select, Snackbar, TextField, Tooltip, Typography
 } from "@mui/material";
-import {Add} from "@mui/icons-material";
+import {Add, EditOutlined, InfoOutlined, EventRepeat, Payment, ListAlt} from "@mui/icons-material";
 import defaultEvent from "../../util/defaultEvent";
 
 const toFormEvent = (evt) => {
@@ -23,6 +23,14 @@ const toFormEvent = (evt) => {
         amount
     };
 };
+
+const SectionHeader = ({ icon, label }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexBasis: '100%', mt: 0.5 }}>
+        {icon}
+        <Typography variant="subtitle2" color="text.secondary">{label}</Typography>
+        <Divider sx={{ flex: 1 }} />
+    </Box>
+);
 
 const EditEventButton = ({event}) => {
     const [isEditing, setEditing] = useState(false);
@@ -140,9 +148,21 @@ const EditEventButton = ({event}) => {
             <Box sx={{display: "flex", justifyContent: "right"}}>
                 {isEditingEvent ? (
                     <Tooltip placement="top" arrow title="Edit item">
-                        <Button variant="contained" color="secondary" onClick={toggleEditing}>
-                            <FaPencilAlt/>
-                        </Button>
+                        <IconButton
+                            size="small"
+                            onClick={toggleEditing}
+                            sx={{
+                                border: '1px solid',
+                                borderColor: 'secondary.light',
+                                color: 'secondary.main',
+                                borderRadius: 1.5,
+                                '&:hover': {
+                                    bgcolor: 'rgba(0,150,136,0.08)',
+                                },
+                            }}
+                        >
+                            <EditOutlined fontSize="small" />
+                        </IconButton>
                     </Tooltip>
                 ) : (
                     <Button variant="contained" color="secondary" onClick={addEvent} endIcon={<Add />}>Add New Item</Button>
@@ -151,14 +171,24 @@ const EditEventButton = ({event}) => {
 
             <Dialog open={isEditing} onClose={toggleEditing}>
 
-                <DialogTitle>{isEditingEvent ? `Editing ${event.title}` : 'Add Item'}</DialogTitle>
+                <DialogTitle sx={{
+                    backgroundImage: (theme) => theme.palette.gradient.primary,
+                    color: 'white',
+                    pb: 1.5,
+                }}>
+                    <Typography variant="h6" component="span" sx={{ fontWeight: 600, color: 'inherit' }}>
+                        {isEditingEvent ? `Editing ${event.title}` : 'Add Item'}
+                    </Typography>
+                    <Typography variant="body2" component="div" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.25 }}>
+                        {isEditingEvent ? 'Update the details below' : 'Fill in the details to create a new item'}
+                    </Typography>
+                </DialogTitle>
 
                 <Container>
                     <form id="event-form" onSubmit={handleSubmit}>
 
-                        {/* ── Details ── */}
-                        <Divider sx={{ flexBasis: '100%' }} />
-                        <Typography variant="overline" component="div">Details</Typography>
+                        {/* -- Details -- */}
+                        <SectionHeader icon={<ListAlt fontSize="small" color="primary" />} label="Details" />
 
                         <TextField className="half" disabled={submitting} name="title" onChange={handleChange}
                                    value={formData.title} label="Title" required/>
@@ -177,10 +207,9 @@ const EditEventButton = ({event}) => {
                                    label={formData.recurring ? 'Starting on' : 'Date'} type="date" name="startdate" value={formData.startdate}
                                    onChange={handleChange} required InputLabelProps={{ shrink: true }}/>
 
-                        {/* ── Payment (hidden for income) ── */}
+                        {/* -- Payment (hidden for income) -- */}
                         <Collapse in={formData.type !== 'income'} sx={{ flexBasis: '100%' }}>
-                            <Divider />
-                            <Typography variant="overline" sx={{ display: 'block', mt: 1 }}>Payment</Typography>
+                            <SectionHeader icon={<Payment fontSize="small" color="primary" />} label="Payment" />
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '15px 2%', '& > *': { flexBasis: '100%' }, '& > .half': { flexBasis: '46%' } }}>
                                 <FormControlLabel className="half" control={<Checkbox disabled={submitting} name="autoPay"
                                     checked={formData.autoPay} onChange={handleChange} />} label="Auto-pay" />
@@ -206,9 +235,8 @@ const EditEventButton = ({event}) => {
                             </Box>
                         </Collapse>
 
-                        {/* ── Schedule ── */}
-                        <Divider sx={{ flexBasis: '100%' }} />
-                        <Typography variant="overline" component="div">Schedule</Typography>
+                        {/* -- Schedule -- */}
+                        <SectionHeader icon={<EventRepeat fontSize="small" color="primary" />} label="Schedule" />
 
                         <FormControlLabel control={<Checkbox disabled={submitting} name="recurring"
                                                              checked={formData.recurring} onChange={handleChange}/>}
@@ -275,15 +303,45 @@ const EditEventButton = ({event}) => {
                                 </Collapse>
 
                                 {rruleSummary && (
-                                    <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', flexBasis: '100%' }}>
-                                        {rruleSummary}
-                                    </Typography>
+                                    <Box sx={{
+                                        flexBasis: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        px: 1.5,
+                                        py: 1,
+                                        borderRadius: 1,
+                                        bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(0,150,136,0.10)' : 'rgba(0,150,136,0.06)',
+                                        border: '1px solid',
+                                        borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(0,150,136,0.25)' : 'rgba(0,150,136,0.15)',
+                                    }}>
+                                        <InfoOutlined fontSize="small" color="secondary" />
+                                        <Typography variant="body2" sx={{ color: 'secondary.main', fontWeight: 500 }}>
+                                            {rruleSummary}
+                                        </Typography>
+                                    </Box>
                                 )}
                             </Box>
                         </Collapse>
 
-                        <Button fullWidth variant="contained" type="submit" disabled={submitting}>
-                            Submit
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            type="submit"
+                            disabled={submitting}
+                            sx={{
+                                backgroundImage: (theme) => theme.palette.gradient.hero,
+                                color: 'white',
+                                py: 1.5,
+                                fontWeight: 600,
+                                fontSize: '0.95rem',
+                                '&:hover': {
+                                    backgroundImage: (theme) => theme.palette.gradient.hero,
+                                    filter: 'brightness(1.1)',
+                                },
+                            }}
+                        >
+                            {isEditingEvent ? 'Save Changes' : 'Add Item'}
                         </Button>
                     </form>
                 </Container>

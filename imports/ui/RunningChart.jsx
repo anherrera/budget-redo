@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React from 'react';
 import Chart from 'react-apexcharts';
 
 export const RunningChart = ({ options, series }) => {
 
     const seriesData = [{
-        name: 'one',
+        name: 'Balance',
         data: series
     }];
 
@@ -12,8 +12,9 @@ export const RunningChart = ({ options, series }) => {
         <Chart
             options={options}
             series={seriesData}
-            type="line"
+            type="area"
             width="100%"
+            height={220}
         />
     );
 };
