@@ -141,15 +141,16 @@ const EditEventButton = ({event}) => {
                                    onChange={handleChange} label="amount" required/>
                         <TextField disabled={submitting} variant="filled"
                                    label={formData.recurring ? 'starting on' : 'on'} type="date" name="startdate" value={formData.startdate}
-                                   onChange={handleChange} required/>
+                                   onChange={handleChange} required InputLabelProps={{ shrink: true }}/>
 
-                        {formData.type === 'bill' && (
+                        <Collapse in={formData.type === 'bill'}>
                             <FormControlLabel control={<Checkbox disabled={submitting} name="variableAmount"
                                 checked={!!formData.variableAmount} onChange={handleChange} />} label="Variable amount?" />
-                        )}
+                        </Collapse>
 
-                        {(formData.type === 'cc_payment' || (formData.type === 'bill' && formData.variableAmount)) && (
+                        <Collapse in={formData.type === 'cc_payment' || (formData.type === 'bill' && !!formData.variableAmount)}>
                             <TextField
+                                fullWidth
                                 disabled={submitting}
                                 name="statementDate"
                                 value={formData.statementDate || ''}
@@ -157,8 +158,9 @@ const EditEventButton = ({event}) => {
                                 variant="filled"
                                 onChange={handleChange}
                                 label="Due Date"
+                                InputLabelProps={{ shrink: true }}
                             />
-                        )}
+                        </Collapse>
 
                         <FormControlLabel control={<Checkbox disabled={submitting} className="half" name="autoPay"
                             checked={formData.autoPay} onChange={handleChange} />} label="automatic?" />
@@ -206,9 +208,9 @@ const EditEventButton = ({event}) => {
                                 <FormControlLabel disabled={submitting || !formData.recurring} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label={formData.frequency === RRule.MONTHLY ? "shift weekend to Friday" : "only falls M-F"} />
                                 <TextField className="half"
                                            name="until" variant="filled" value={formData.until} label="until" type="date"
-                                           placeholder=""
                                            onChange={handleChange}
                                            disabled={submitting || !formData.recurring}
+                                           InputLabelProps={{ shrink: true }}
                                 />
                             </Box>
                         </Collapse>
