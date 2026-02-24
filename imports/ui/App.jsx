@@ -9,6 +9,7 @@ import {
     Box,
     Card,
     CardContent,
+    CircularProgress,
     Container,
     createTheme,
     Divider,
@@ -44,7 +45,7 @@ export const App = () => {
     const user = useTracker(() => Meteor.user());
     const logout = () => Meteor.logout();
 
-    const evtsFlat = useTracker(() => getCurrentEvents(user, start, end, balance));
+    const { events: evtsFlat, loading } = useTracker(() => getCurrentEvents(user, start, end, balance));
     
     const { income, expenses, series, min, max, chartCategories } = useMemo(() => {
         if (!evtsFlat.length) {
@@ -323,35 +324,32 @@ export const App = () => {
                                     </Grid>
                                     <Grid item md={12}>
                                         <Card>
-                                            <CardContent sx={{ py: 2 }}>
-                                                <Typography variant="subtitle1" gutterBottom color="text.primary" fontWeight={600}>
-                                                    Add New Transaction
-                                                </Typography>
-                                                <EditEventBtnForm event={defaultEvent} />
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                    <Grid item md={12}>
-                                        <Card>
                                             <CardContent sx={{ p: 0 }}>
-                                                <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                                                <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <Typography variant="subtitle1" color="text.primary" fontWeight={600}>
                                                         Transactions
                                                     </Typography>
+                                                    <EditEventBtnForm event={defaultEvent} />
                                                 </Box>
                                                 <Box sx={{height: '70vh', width: '100%', minHeight: 400}}>
-                                            <DataGrid 
-                                                getRowClassName={rowStyle} 
-                                                columns={columns} 
-                                                rows={evtsFlat}
-                                                initialState={{
-                                                    pagination: {
-                                                        paginationModel: { pageSize: 100, page: 0 }
-                                                    }
-                                                }}
-                                                pageSizeOptions={[100]}
-                                                getRowId={(row) => row.listId}
-                                            />
+                                            {loading ? (
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                    <CircularProgress />
+                                                </Box>
+                                            ) : (
+                                                <DataGrid
+                                                    getRowClassName={rowStyle}
+                                                    columns={columns}
+                                                    rows={evtsFlat}
+                                                    initialState={{
+                                                        pagination: {
+                                                            paginationModel: { pageSize: 100, page: 0 }
+                                                        }
+                                                    }}
+                                                    pageSizeOptions={[100]}
+                                                    getRowId={(row) => row.listId}
+                                                />
+                                            )}
                                                 </Box>
                                             </CardContent>
                                         </Card>

@@ -3,11 +3,12 @@ import {RRule} from 'rrule'
 import { FaPencilAlt } from 'react-icons/fa';
 import { Meteor } from 'meteor/meteor';
 import {
+    Alert,
     Box,
-    Button, Checkbox, Container,
+    Button, Checkbox, Collapse, Container,
     Dialog,
     DialogTitle,
-    FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField, Tooltip
+    FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, Snackbar, TextField, Tooltip
 } from "@mui/material";
 import {Add} from "@mui/icons-material";
 import defaultEvent from "../../util/defaultEvent";
@@ -26,6 +27,7 @@ const EditEventButton = ({event}) => {
     const [isEditing, setEditing] = useState(false);
     const [resetEvent, setResetEvent] = useState(toFormEvent(event));
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState(null);
     const [timePeriod, setTimePeriod] = useState("month");
 
     const isEditingEvent = '_id' in event;
@@ -98,6 +100,7 @@ const EditEventButton = ({event}) => {
             setEditing(false);
         } catch (err) {
             console.error(err);
+            setError(err.reason || 'Something went wrong');
             setSubmitting(false);
         }
     }
@@ -164,48 +167,51 @@ const EditEventButton = ({event}) => {
                                                              checked={formData.recurring} onChange={handleChange}/>}
                                           label="recurring item?"/>
 
-
-                        <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
-                                   value={parseInt(formData.interval, 10) || 1} type="number" onChange={handleChange} label="every" inputProps={{min: 1}}/>
-                        <FormControl className="half" disabled={submitting || !formData.recurring}>
-                            <InputLabel id="label-frequency">frequency</InputLabel>
-                            <Select name="frequency" value={formData.frequency} onChange={handleChange}
-                                    label="frequency">
-                                <MenuItem value={RRule.DAILY}>Days</MenuItem>
-                                <MenuItem value={RRule.WEEKLY}>Weeks</MenuItem>
-                                <MenuItem value={RRule.MONTHLY}>Months</MenuItem>
-                                <MenuItem value={RRule.YEARLY}>Years</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}>
-                            <TextField name="setPos" value={parseInt(formData.setPos, 10) || 1} type="number"
-                                       onChange={handleChange} label="on the"
-                                       disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency !== RRule.MONTHLY} inputProps={{min: 1, max: 31}} />
-                            <FormHelperText>-th day of the {timePeriod}</FormHelperText>
-                        </FormControl>
-                        <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}
-                                          control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth}
-                                                             onChange={handleChange}/>} label={"last day of the " + timePeriod}/>
-                        <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly}>
-                            <InputLabel id="weekdays">only falls on</InputLabel>
-                            <Select name="weekdays" multiple value={formData.weekdays} onChange={handleChange}
-                                    label="weekdays">
-                                <MenuItem value={RRule.SU.toString()}>Sunday</MenuItem>
-                                <MenuItem value={RRule.MO.toString()}>Monday</MenuItem>
-                                <MenuItem value={RRule.TU.toString()}>Tuesday</MenuItem>
-                                <MenuItem value={RRule.WE.toString()}>Wednesday</MenuItem>
-                                <MenuItem value={RRule.TH.toString()}>Thursday</MenuItem>
-                                <MenuItem value={RRule.FR.toString()}>Friday</MenuItem>
-                                <MenuItem value={RRule.SA.toString()}>Saturday</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControlLabel disabled={submitting || !formData.recurring} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label={formData.frequency === RRule.MONTHLY ? "shift weekend to Friday" : "only falls M-F"} />
-                        <TextField className="half"
-                                   name="until" variant="filled" value={formData.until} label="until" type="date"
-                                   placeholder=""
-                                   onChange={handleChange}
-                                   disabled={submitting || !formData.recurring}
-                        />
+                        <Collapse in={!!formData.recurring}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '15px 2%' }}>
+                                <TextField className="half" disabled={submitting || !formData.recurring} name="interval"
+                                           value={parseInt(formData.interval, 10) || 1} type="number" onChange={handleChange} label="every" inputProps={{min: 1}}/>
+                                <FormControl className="half" disabled={submitting || !formData.recurring}>
+                                    <InputLabel id="label-frequency">frequency</InputLabel>
+                                    <Select name="frequency" value={formData.frequency} onChange={handleChange}
+                                            label="frequency">
+                                        <MenuItem value={RRule.DAILY}>Days</MenuItem>
+                                        <MenuItem value={RRule.WEEKLY}>Weeks</MenuItem>
+                                        <MenuItem value={RRule.MONTHLY}>Months</MenuItem>
+                                        <MenuItem value={RRule.YEARLY}>Years</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <FormControl className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}>
+                                    <TextField name="setPos" value={parseInt(formData.setPos, 10) || 1} type="number"
+                                               onChange={handleChange} label="on the"
+                                               disabled={submitting || !formData.recurring || formData.lastDayOfMonth || formData.frequency !== RRule.MONTHLY} inputProps={{min: 1, max: 31}} />
+                                    <FormHelperText>-th day of the {timePeriod}</FormHelperText>
+                                </FormControl>
+                                <FormControlLabel className="half" disabled={submitting || !formData.recurring || formData.frequency !== RRule.MONTHLY}
+                                                  control={<Checkbox name="lastDayOfMonth" checked={formData.lastDayOfMonth}
+                                                                     onChange={handleChange}/>} label={"last day of the " + timePeriod}/>
+                                <FormControl className="half" disabled={submitting || !formData.recurring || formData.weekdaysOnly}>
+                                    <InputLabel id="weekdays">only falls on</InputLabel>
+                                    <Select name="weekdays" multiple value={formData.weekdays} onChange={handleChange}
+                                            label="weekdays">
+                                        <MenuItem value={RRule.SU.toString()}>Sunday</MenuItem>
+                                        <MenuItem value={RRule.MO.toString()}>Monday</MenuItem>
+                                        <MenuItem value={RRule.TU.toString()}>Tuesday</MenuItem>
+                                        <MenuItem value={RRule.WE.toString()}>Wednesday</MenuItem>
+                                        <MenuItem value={RRule.TH.toString()}>Thursday</MenuItem>
+                                        <MenuItem value={RRule.FR.toString()}>Friday</MenuItem>
+                                        <MenuItem value={RRule.SA.toString()}>Saturday</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <FormControlLabel disabled={submitting || !formData.recurring} control={<Checkbox name="weekdaysOnly" checked={formData.weekdaysOnly} onChange={handleChange} />} label={formData.frequency === RRule.MONTHLY ? "shift weekend to Friday" : "only falls M-F"} />
+                                <TextField className="half"
+                                           name="until" variant="filled" value={formData.until} label="until" type="date"
+                                           placeholder=""
+                                           onChange={handleChange}
+                                           disabled={submitting || !formData.recurring}
+                                />
+                            </Box>
+                        </Collapse>
 
                         <Button fullWidth variant="contained" type="submit" disabled={submitting}>
                             Submit
@@ -213,6 +219,9 @@ const EditEventButton = ({event}) => {
                     </form>
                 </Container>
             </Dialog>
+            <Snackbar open={!!error} autoHideDuration={5000} onClose={() => setError(null)}>
+                <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>
+            </Snackbar>
         </Box>
     )
 }

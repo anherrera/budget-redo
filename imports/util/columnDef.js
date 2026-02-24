@@ -3,7 +3,7 @@ import {Edit} from "../ui/event/Edit";
 import {Title} from "../ui/event/Title";
 import React from "react";
 import { Meteor } from 'meteor/meteor';
-import { Tooltip } from "@mui/material";
+import { Chip, Tooltip } from "@mui/material";
 
 const money = (amt) => new Intl.NumberFormat("en-US", {style: "currency", currency: "USD"}).format(amt)
 const moneyFromCents = (cents) => money((cents || 0) / 100);
@@ -21,7 +21,16 @@ const columns = [
         field: 'type',
         flex: 1,
         headerName: "Type",
-        editable: false
+        editable: false,
+        renderCell: (params) => {
+            const typeMap = {
+                bill: { label: 'Bill', color: 'error' },
+                income: { label: 'Income', color: 'success' },
+                cc_payment: { label: 'Credit Card', color: 'warning' },
+            };
+            const config = typeMap[params.value] || { label: params.value, color: 'default' };
+            return <Chip label={config.label} color={config.color} size="small" variant="outlined" />;
+        }
     },
     {
         field: 'timestamp',

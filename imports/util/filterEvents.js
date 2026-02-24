@@ -8,11 +8,11 @@ const getCurrentEvents = (user, start, end, balance) => {
     const userFilter = user ? {userId: user._id} : {};
 
     let filteredEvts = [];
-    if (!user) return [];
+    if (!user) return { events: [], loading: false };
 
     const handler = Meteor.subscribe('events');
     if (!handler.ready()) {
-        return filteredEvts;
+        return { events: [], loading: true };
     }
 
     let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}});
@@ -78,7 +78,7 @@ const getCurrentEvents = (user, start, end, balance) => {
         })
     });
 
-    return applyRunningBalance(filteredEvts, balance);
+    return { events: applyRunningBalance(filteredEvts, balance), loading: false };
 };
 
 export default getCurrentEvents;
