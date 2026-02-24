@@ -42,7 +42,10 @@ export const App = () => {
     });
 
 
-    const user = useTracker(() => Meteor.user());
+    const { user, loggingIn } = useTracker(() => ({
+        user: Meteor.user(),
+        loggingIn: Meteor.loggingIn(),
+    }));
     const logout = () => Meteor.logout();
 
     const { events: evtsFlat, loading } = useTracker(() => getCurrentEvents(user, start, end, balance));
@@ -300,7 +303,7 @@ export const App = () => {
             <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 1.5 }}>
                 <Container maxWidth="xl">
                     <Grid container spacing={2}>
-                    {user ? (
+                    {loggingIn ? null : user ? (
                         <>
                             <Grid item md={12}>
                                 <Header user={user} logout={logout} darkMode={darkMode} toggleDarkMode={toggleDarkMode}/>
