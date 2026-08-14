@@ -10,6 +10,10 @@ services:
       - MONGO_URL=mongodb://mongo:27017/budget
       - PORT=3000
       - HTTP_FORWARDED_COUNT=1
+      # Without this the container runs UTC, so /api/bills computes its default
+      # window a day ahead between 7pm and midnight local and drops bills due
+      # today. Matches the host and the openclaw container.
+      - TZ=America/Chicago
     depends_on:
       mongo:
         condition: service_started
