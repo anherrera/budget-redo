@@ -1,5 +1,6 @@
 import assert from "assert";
 import "./eventsMethods.server.tests";
+import "./expandEvents.server.tests";
 import "./recurrence.server.tests";
 import "./runningBalance.server.tests";
 

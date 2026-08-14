@@ -1,13 +1,10 @@
 import {EventsCollection} from "../db/EventsCollection";
-import {DateTime} from "luxon";
-import {RRule, Weekday} from "rrule";
-import {adjustToWeekday, shouldAdjustToWeekday} from "./weekdayAdjustment";
-import {applyRunningBalance, getAmountCents} from "./runningBalance";
+import {applyRunningBalance} from "./runningBalance";
+import expandEvents from "./expandEvents";
 
 const getCurrentEvents = (user, start, end, balance) => {
     const userFilter = user ? {userId: user._id} : {};
 
-    let filteredEvts = [];
     if (!user) return { events: [], loading: false };
 
     const handler = Meteor.subscribe('events');
@@ -15,68 +12,8 @@ const getCurrentEvents = (user, start, end, balance) => {
         return { events: [], loading: true };
     }
 
-    let evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}});
-
-    evtsAll.forEach(evt => {
-        let betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
-        let betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
-
-        let weekdaysArray = [];
-        let weekdays = [];
-        if (evt.weekdaysOnly === true) {
-            weekdaysArray = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR];
-            weekdays = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR].map((i) => i.toString());
-        } else {
-            if (evt.weekdays) {
-                const weekdayStr = Array.isArray(evt.weekdays) ? evt.weekdays.join(',') : String(evt.weekdays);
-                weekdaysArray = weekdayStr !== "" ? weekdayStr.split(",").map((w) => Weekday.fromStr(w)) : [];
-                weekdays = weekdayStr !== "" ? weekdayStr.split(",") : [];
-            }
-        }
-
-        let rule;
-        const needsWeekdayAdjustment = evt.frequency === RRule.MONTHLY && shouldAdjustToWeekday(evt);
-        
-        if (evt.recurring) {
-            let ruleOpts = {
-                dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
-                wkst: RRule.SU,
-                interval: parseInt(evt.interval),
-                freq: evt.frequency,
-                byweekday: needsWeekdayAdjustment ? [] : weekdaysArray
-            };
-
-            if (evt.lastDayOfMonth === true || evt.setPos) {
-                ruleOpts.bysetpos = evt.lastDayOfMonth ? -1 : parseInt(evt.setPos);
-            }
-            if (evt.until) {
-                ruleOpts.until = DateTime.fromISO(evt.until).toJSDate();
-            }
-
-            rule = new RRule(ruleOpts);
-        } else {
-            rule = new RRule({
-                wkst: RRule.SU,
-                freq: RRule.DAILY,
-                dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
-                count: 1
-            });
-        }
-
-        rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
-            let adjustedInstance = needsWeekdayAdjustment ? adjustToWeekday(instance) : instance;
-            let displayTime = DateTime.fromJSDate(adjustedInstance).startOf('day');
-            filteredEvts.push({
-                ...evt,
-                amountCents: getAmountCents(evt),
-                weekdays: weekdays,
-                listId: evt._id + idx,
-                timestamp: displayTime.toMillis(),
-                due: displayTime.toFormat('MM/dd/yyyy'),
-                dueHuge: displayTime.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
-            })
-        })
-    });
+    const evtsAll = EventsCollection.find(userFilter, {sort: {createdAt: -1}});
+    const filteredEvts = expandEvents(evtsAll, start, end);
 
     return { events: applyRunningBalance(filteredEvts, balance), loading: false };
 };
