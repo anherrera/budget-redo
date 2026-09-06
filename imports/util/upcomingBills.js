@@ -15,6 +15,10 @@ import {getAmountCents} from "./runningBalance.js";
  * recurrence for that event is skipped: the two would otherwise both appear,
  * disagreeing. Riverside is the motivating case — its recurrence resolves to
  * October while the bill is genuinely due in August.
+ *
+ * `payments` (PaymentsCollection rows) mark individual occurrences paid. A
+ * paid bill is still listed — consumers decide how to show it — it just stops
+ * being something that needs doing.
  */
 
 // expandEvents formats `due` for display; consumers want ISO.
@@ -23,19 +27,36 @@ const toISO = (mmddyyyy) => {
     return `${y}-${m}-${d}`;
 };
 
-const toBill = (evt, dueISO, cents) => ({
+const toBill = (evt, dueISO, cents, payment) => ({
+    eventId: evt._id,
     title: evt.title,
     type: evt.type,
     amount: Math.round(cents) / 100,
     due: dueISO,
     autopay: Boolean(evt.autoPay),
-    // The budget app does not track payment. Reported unpaid so a consumer
-    // over-states what is owed rather than under-stating it; openclaw layers
-    // real payment detection on top from mailbox scanning.
-    paid: false,
+    paid: Boolean(payment),
+    paidAt: payment ? payment.paidAt ?? null : null,
 });
 
-const buildUpcomingBills = (events, start, end) => {
+/**
+ * Index payment rows for the overlay. The key is (eventId, dueDate); a row
+ * with no eventId (written before the backfill, or for a title that matched
+ * several events) is matched on (title, dueDate) instead — and only such rows,
+ * so an id-keyed row can never be claimed by a same-named sibling bill.
+ */
+export const paymentLookup = (payments = []) => {
+    const byEvent = new Map();
+    const byTitle = new Map();
+    for (const p of payments) {
+        if (p.eventId) byEvent.set(`${p.eventId}|${p.dueDate}`, p);
+        else byTitle.set(`${p.title}|${p.dueDate}`, p);
+    }
+    return (evt, dueISO) =>
+        byEvent.get(`${evt._id}|${dueISO}`) || byTitle.get(`${evt.title}|${dueISO}`) || null;
+};
+
+const buildUpcomingBills = (events, start, end, payments = []) => {
+    const paymentFor = paymentLookup(payments);
     const all = [];
     events.forEach((e) => all.push(e));
 
@@ -48,10 +69,13 @@ const buildUpcomingBills = (events, start, end) => {
     }
 
     const bills = [
-        ...stated.map((evt) => toBill(evt, evt.statementDate, getAmountCents(evt))),
-        ...expandEvents(inferred, start, end).map((occ) =>
-            toBill(occ, toISO(occ.due), occ.amountCents)
+        ...stated.map((evt) =>
+            toBill(evt, evt.statementDate, getAmountCents(evt), paymentFor(evt, evt.statementDate))
         ),
+        ...expandEvents(inferred, start, end).map((occ) => {
+            const dueISO = toISO(occ.due);
+            return toBill(occ, dueISO, occ.amountCents, paymentFor(occ, dueISO));
+        }),
     ];
 
     return bills.sort(

@@ -37,8 +37,61 @@ if (Meteor.isServer) {
       });
 
       assert.deepStrictEqual(buildUpcomingBills([mortgage], ...WINDOW), [
-        { title: "Mortgage", type: "bill", amount: 3200, due: "2026-09-01", autopay: true, paid: false },
+        { eventId: "evt-1", title: "Mortgage", type: "bill", amount: 3200, due: "2026-09-01", autopay: true, paid: false, paidAt: null },
       ]);
+    });
+
+    describe("paid overlay", function () {
+      const heloc = baseEvent({ _id: "heloc", title: "HELOC", startdate: "2026-01-14", setPos: 14, statementDate: "2026-09-01" });
+      const water = baseEvent({ _id: "water", title: "Water Bill (Riverside)", startdate: "2026-08-20", interval: 2, setPos: 1, statementDate: "2026-08-20", amountCents: 19013 });
+
+      it("marks an occurrence paid when a payment row matches (eventId, dueDate)", function () {
+        const payments = [{ eventId: "heloc", title: "HELOC", dueDate: "2026-09-01", paidAt: "2026-09-05T21:55:43" }];
+        const [bill] = buildUpcomingBills([heloc], ...WINDOW, payments);
+        assert.strictEqual(bill.paid, true);
+        assert.strictEqual(bill.paidAt, "2026-09-05T21:55:43");
+      });
+
+      it("keeps a paid bill in the list rather than dropping it", function () {
+        const payments = [{ eventId: "water", title: "Water Bill (Riverside)", dueDate: "2026-08-20" }];
+        const bills = buildUpcomingBills([heloc, water], ...WINDOW, payments);
+        assert.deepStrictEqual(bills.map((b) => [b.title, b.paid]), [
+          ["Water Bill (Riverside)", true],
+          ["HELOC", false],
+        ]);
+      });
+
+      it("is per occurrence: paying one due date does not pay the next", function () {
+        const monthly = baseEvent({ _id: "cleaner", title: "Cleaner", startdate: "2026-01-15", setPos: 15, interval: 1 });
+        const payments = [{ eventId: "cleaner", title: "Cleaner", dueDate: "2026-08-15" }];
+        const bills = buildUpcomingBills([monthly], "2026-08-01", "2026-09-30", payments);
+        assert.deepStrictEqual(bills.map((b) => [b.due, b.paid]), [
+          ["2026-08-15", true],
+          ["2026-09-15", false],
+        ]);
+      });
+
+      it("survives a title rename because the key is the event id", function () {
+        const amex = baseEvent({ _id: "amex", title: "Amex CC [5th]", type: "cc_payment", startdate: "2025-10-18", setPos: 18, statementDate: "2026-08-28" });
+        const payments = [{ eventId: "amex", title: "Amex CC [4th]", dueDate: "2026-08-28" }];
+        assert.strictEqual(buildUpcomingBills([amex], ...WINDOW, payments)[0].paid, true);
+      });
+
+      it("falls back to (title, dueDate) only for rows with no eventId", function () {
+        const legacy = [{ eventId: null, title: "HELOC", dueDate: "2026-09-01" }];
+        assert.strictEqual(buildUpcomingBills([heloc], ...WINDOW, legacy)[0].paid, true);
+
+        const wrongId = [{ eventId: "someone-else", title: "HELOC", dueDate: "2026-09-01" }];
+        assert.strictEqual(buildUpcomingBills([heloc], ...WINDOW, wrongId)[0].paid, false);
+      });
+
+      it("does not let a same-titled sibling claim an id-keyed payment", function () {
+        const a = baseEvent({ _id: "extra-a", title: "heloc - extra", startdate: "2026-09-01", recurring: false });
+        const b = baseEvent({ _id: "extra-b", title: "heloc - extra", startdate: "2026-09-01", recurring: false });
+        const payments = [{ eventId: "extra-a", title: "heloc - extra", dueDate: "2026-09-01" }];
+        const bills = buildUpcomingBills([a, b], ...WINDOW, payments);
+        assert.deepStrictEqual(bills.map((x) => [x.eventId, x.paid]).sort(), [["extra-a", true], ["extra-b", false]]);
+      });
     });
 
     it("prefers the statement date over the computed recurrence", function () {

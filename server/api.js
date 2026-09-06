@@ -1,5 +1,7 @@
 import {WebApp} from 'meteor/webapp';
+import {Meteor} from 'meteor/meteor';
 import {EventsCollection} from '../imports/db/EventsCollection';
+import {PaymentsCollection, ensurePaymentIndexes} from '../imports/db/PaymentsCollection';
 import buildUpcomingBills from '../imports/util/upcomingBills';
 
 // Read-only JSON for LAN consumers (Home Assistant, the openclaw dashboard).
@@ -28,6 +30,14 @@ const sendJSON = (res, status, body) => {
     res.end(JSON.stringify(body));
 };
 
+Meteor.startup(async () => {
+    try {
+        await ensurePaymentIndexes();
+    } catch (err) {
+        console.error('[api/bills] payments index', err);
+    }
+});
+
 // Meteor 3 moved WebApp to Express; connectHandlers remains for compatibility.
 const handlers = WebApp.handlers || WebApp.connectHandlers;
 
@@ -48,7 +58,13 @@ handlers.use('/api/bills', async (req, res) => {
             type: {$in: ['bill', 'cc_payment']},
         }).fetchAsync();
 
-        const bills = buildUpcomingBills(events, start, end);
+        // Paid state lives per occurrence in `payments`; only rows in the window
+        // can match, so that is all we load.
+        const payments = await PaymentsCollection.find({
+            dueDate: {$gte: start, $lte: end},
+        }).fetchAsync();
+
+        const bills = buildUpcomingBills(events, start, end, payments);
 
         sendJSON(res, 200, {
             start,
