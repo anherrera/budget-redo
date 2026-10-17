@@ -239,6 +239,10 @@ export function getTheme(darkMode) {
                                     : 'rgba(244,67,54,0.14)',
                             },
                         },
+                        '&.skipped': {
+                            opacity: 0.5,
+                            textDecoration: 'line-through',
+                        },
                         '&.warning': {
                             backgroundColor: darkMode
                                 ? 'rgba(255,193,7,0.12)'

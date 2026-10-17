@@ -19,6 +19,9 @@ import {getAmountCents} from "./runningBalance.js";
  * `payments` (PaymentsCollection rows) mark individual occurrences paid. A
  * paid bill is still listed — consumers decide how to show it — it just stops
  * being something that needs doing.
+ *
+ * Occurrences listed in an event's `skipDates` are dropped entirely: a
+ * skipped month is not due at all.
  */
 
 // expandEvents formats `due` for display; consumers want ISO.
@@ -72,7 +75,7 @@ const buildUpcomingBills = (events, start, end, payments = []) => {
         ...stated.map((evt) =>
             toBill(evt, evt.statementDate, getAmountCents(evt), paymentFor(evt, evt.statementDate))
         ),
-        ...expandEvents(inferred, start, end).map((occ) => {
+        ...expandEvents(inferred, start, end).filter((occ) => !occ.skipped).map((occ) => {
             const dueISO = toISO(occ.due);
             return toBill(occ, dueISO, occ.amountCents, paymentFor(occ, dueISO));
         }),

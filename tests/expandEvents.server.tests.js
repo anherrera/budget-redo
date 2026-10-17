@@ -132,5 +132,19 @@ if (Meteor.isServer) {
       const [occurrence] = expandEvents([legacy], "2026-08-13", "2026-09-12");
       assert.strictEqual(occurrence.amountCents, 9300);
     });
+
+    it("flags only the occurrences listed in skipDates as skipped", function () {
+      const travel = baseEvent({
+        title: "Savings - Travel",
+        startdate: "2026-01-01",
+        setPos: 1,
+        skipDates: ["2026-09-01"],
+      });
+
+      assert.deepStrictEqual(
+        expandEvents([travel], "2026-08-01", "2026-10-31").map((e) => [e.dueISO, e.skipped]),
+        [["2026-08-01", false], ["2026-09-01", true], ["2026-10-01", false]]
+      );
+    });
   });
 }

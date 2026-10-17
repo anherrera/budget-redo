@@ -30,7 +30,9 @@ export const applyRunningBalance = (events, balance) => {
 
     return sortByTimestampDeterministic(events).map((evt) => {
         const amountCents = getAmountCents(evt);
-        if (evt.type === 'bill' || evt.type === 'cc_payment') {
+        if (evt.skipped) {
+            // no effect on the balance
+        } else if (evt.type === 'bill' || evt.type === 'cc_payment') {
             runningCents -= amountCents;
         } else {
             runningCents += amountCents;

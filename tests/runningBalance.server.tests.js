@@ -42,6 +42,18 @@ if (Meteor.isServer) {
       );
     });
 
+    it("leaves the balance untouched for skipped occurrences", function () {
+      const projected = applyRunningBalance(
+        [
+          { _id: "1", listId: "A", timestamp: 1000, type: "bill", amountCents: 2000, skipped: true },
+          { _id: "2", listId: "B", timestamp: 2000, type: "bill", amountCents: 1000 },
+        ],
+        "100.00"
+      );
+
+      assert.deepStrictEqual(projected.map((evt) => evt.running), ["100.00", "90.00"]);
+    });
+
     it("uses zero start when balance input is invalid", function () {
       const projected = applyRunningBalance(
         [{ _id: "1", listId: "A", timestamp: 1, type: "income", amountCents: 123 }],

@@ -95,6 +95,10 @@ const standardizeEvent = (evt, userId) => {
     delete evtObj.dueHuge;
     delete evtObj.listId;
     delete evtObj.amount;
+    delete evtObj.dueISO;
+    delete evtObj.skipped;
+    // skipDates is owned by events.toggleSkip; the edit form must not clobber it.
+    delete evtObj.skipDates;
 
     evtObj.title = evt.title.trim();
     evtObj.type = evt.type;
@@ -240,6 +244,31 @@ Meteor.methods({
         }
 
         await EventsCollection.removeAsync(eventId);
+    },
+
+    async 'events.toggleSkip'(eventId, date) {
+        check(eventId, String);
+        check(date, String);
+
+        if (!this.userId) {
+            throw new Meteor.Error('Not authorized.');
+        }
+        if (!isISODate(date)) {
+            throw new Meteor.Error('validation-error', 'Date must be in YYYY-MM-DD format.');
+        }
+
+        const event = await EventsCollection.findOneAsync({_id: eventId, userId: this.userId});
+
+        if (!event) {
+            throw new Meteor.Error('Not authorized.');
+        }
+
+        const skipped = (event.skipDates || []).includes(date);
+        await EventsCollection.updateAsync(eventId, skipped
+            ? { $pull: { skipDates: date } }
+            : { $addToSet: { skipDates: date } }
+        );
+        return !skipped;
     },
 
     async 'events.updateStatementDate'(eventId, statementDate) {

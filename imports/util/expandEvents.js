@@ -27,6 +27,7 @@ const expandEvents = (events, start, end) => {
     const betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
 
     events.forEach(evt => {
+        const skipDates = new Set(evt.skipDates || []);
         let weekdaysArray = [];
         let weekdays = [];
         if (evt.weekdaysOnly === true) {
@@ -72,12 +73,16 @@ const expandEvents = (events, start, end) => {
         rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
             let adjustedInstance = needsWeekdayAdjustment ? adjustToWeekday(instance) : instance;
             let displayTime = DateTime.fromJSDate(adjustedInstance).startOf('day');
+            const dueISO = displayTime.toISODate();
             expanded.push({
                 ...evt,
                 amountCents: getAmountCents(evt),
                 weekdays: weekdays,
                 listId: evt._id + idx,
                 timestamp: displayTime.toMillis(),
+                dueISO,
+                // A skipped occurrence stays listed (so it can be un-skipped) but moves no money.
+                skipped: skipDates.has(dueISO),
                 due: displayTime.toFormat('MM/dd/yyyy'),
                 dueHuge: displayTime.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY)
             })

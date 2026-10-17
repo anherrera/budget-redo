@@ -41,6 +41,11 @@ if (Meteor.isServer) {
       ]);
     });
 
+    it("drops skipped occurrences", function () {
+      const travel = baseEvent({ title: "Savings - Travel", startdate: "2026-01-01", setPos: 1, skipDates: ["2026-09-01"] });
+      assert.deepStrictEqual(buildUpcomingBills([travel], ...WINDOW), []);
+    });
+
     describe("paid overlay", function () {
       const heloc = baseEvent({ _id: "heloc", title: "HELOC", startdate: "2026-01-14", setPos: 14, statementDate: "2026-09-01" });
       const water = baseEvent({ _id: "water", title: "Water Bill (Riverside)", startdate: "2026-08-20", interval: 2, setPos: 1, statementDate: "2026-08-20", amountCents: 19013 });

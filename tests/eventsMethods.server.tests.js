@@ -8,6 +8,7 @@ const insertMethod = () => Meteor.server.method_handlers["events.insertAsync"];
 const editMethod = () => Meteor.server.method_handlers["events.edit"];
 const removeMethod = () => Meteor.server.method_handlers["events.removeAsync"];
 const updateStatementDateMethod = () => Meteor.server.method_handlers["events.updateStatementDate"];
+const toggleSkipMethod = () => Meteor.server.method_handlers["events.toggleSkip"];
 
 const validEvent = (overrides = {}) => ({
   title: "Rent",
@@ -189,6 +190,45 @@ if (Meteor.isServer) {
       );
       const saved = await EventsCollection.findOneAsync({ _id: eventId });
       assert.strictEqual(saved.statementDate, "2026-02-15");
+    });
+
+    it("toggles a skipped occurrence for the owner only", async function () {
+      const eventId = await EventsCollection.insertAsync({
+        ...validEvent(),
+        amountCents: 500,
+        userId: "owner-user",
+        createdAt: Date.now(),
+      });
+
+      await expectMeteorError(
+        async () => toggleSkipMethod().apply({ userId: "other-user" }, [eventId, "2026-03-01"]),
+        "Not authorized."
+      );
+
+      assert.strictEqual(await toggleSkipMethod().apply({ userId: "owner-user" }, [eventId, "2026-03-01"]), true);
+      assert.deepStrictEqual((await EventsCollection.findOneAsync(eventId)).skipDates, ["2026-03-01"]);
+
+      assert.strictEqual(await toggleSkipMethod().apply({ userId: "owner-user" }, [eventId, "2026-03-01"]), false);
+      assert.deepStrictEqual((await EventsCollection.findOneAsync(eventId)).skipDates, []);
+    });
+
+    it("does not let an edit clobber skipDates", async function () {
+      const eventId = await EventsCollection.insertAsync({
+        ...validEvent(),
+        amountCents: 500,
+        userId: "owner-user",
+        createdAt: Date.now(),
+        skipDates: ["2026-03-01"],
+      });
+
+      await editMethod().apply(
+        { userId: "owner-user" },
+        [{ ...validEvent({ _id: eventId }), skipDates: [], skipped: true, dueISO: "2026-02-01" }]
+      );
+      const saved = await EventsCollection.findOneAsync(eventId);
+      assert.deepStrictEqual(saved.skipDates, ["2026-03-01"]);
+      assert.strictEqual(saved.skipped, undefined);
+      assert.strictEqual(saved.dueISO, undefined);
     });
   });
 }

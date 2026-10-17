@@ -69,7 +69,7 @@ export const App = () => {
         const dailyRunning = new Map();
         
         evtsFlat.forEach((i) => {
-            const amountCents = Number.isInteger(i.amountCents)
+            const amountCents = i.skipped ? 0 : Number.isInteger(i.amountCents)
                 ? i.amountCents
                 : Math.round((parseFloat(i.amount) || 0) * 100);
             if (i.type === 'bill') {
@@ -274,6 +274,7 @@ export const App = () => {
     const theme = useMemo(() => getTheme(darkMode), [darkMode]);
 
     const rowStyle = (record) => {
+        if (record.row.skipped) return 'skipped';
         const running = parseFloat(record.row.running);
         if (running < 0) return 'error';
         if (running <= 200) return 'warning';
