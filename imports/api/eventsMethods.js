@@ -263,6 +263,12 @@ Meteor.methods({
             throw new Meteor.Error('Not authorized.');
         }
 
+        // Card payments are owed regardless, and their statementDate path in
+        // /api/bills ignores skipDates anyway.
+        if (event.type === 'cc_payment') {
+            throw new Meteor.Error('validation-error', 'Credit card payments cannot be skipped.');
+        }
+
         const skipped = (event.skipDates || []).includes(date);
         await EventsCollection.updateAsync(eventId, skipped
             ? { $pull: { skipDates: date } }

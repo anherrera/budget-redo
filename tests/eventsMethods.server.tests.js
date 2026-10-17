@@ -212,6 +212,20 @@ if (Meteor.isServer) {
       assert.deepStrictEqual((await EventsCollection.findOneAsync(eventId)).skipDates, []);
     });
 
+    it("refuses to skip a credit card payment", async function () {
+      const eventId = await EventsCollection.insertAsync({
+        ...validEvent({ type: "cc_payment" }),
+        amountCents: 500,
+        userId: "owner-user",
+        createdAt: Date.now(),
+      });
+
+      await expectMeteorError(
+        async () => toggleSkipMethod().apply({ userId: "owner-user" }, [eventId, "2026-03-01"]),
+        "Credit card payments cannot be skipped."
+      );
+    });
+
     it("does not let an edit clobber skipDates", async function () {
       const eventId = await EventsCollection.insertAsync({
         ...validEvent(),

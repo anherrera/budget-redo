@@ -30,7 +30,7 @@ export const Edit = ({ evt, onDeleteClick}) => {
 
     return (
         <Box sx={{width: '100%', height: '100%', display: "flex", gap: '8px', justifyContent: 'center', alignItems: 'center'}}>
-            {evt.recurring && <SkipBtn evt={evt} />}
+            {evt.recurring && evt.type !== 'cc_payment' && <SkipBtn evt={evt} />}
             {isFirst && <>
             <EditEventBtnForm event={evt} />
             <Tooltip arrow title="Delete item" placement="top">
