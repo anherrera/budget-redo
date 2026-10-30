@@ -46,6 +46,12 @@ if (Meteor.isServer) {
       assert.deepStrictEqual(buildUpcomingBills([travel], ...WINDOW), []);
     });
 
+    it("drops a skipped statement date", function () {
+      const bill = baseEvent({ title: "Variable", variableAmount: true, startdate: "2026-01-15", setPos: 15,
+        statementDate: "2026-09-01", skipDates: ["2026-09-01"] });
+      assert.deepStrictEqual(buildUpcomingBills([bill], ...WINDOW), []);
+    });
+
     describe("paid overlay", function () {
       const heloc = baseEvent({ _id: "heloc", title: "HELOC", startdate: "2026-01-14", setPos: 14, statementDate: "2026-09-01" });
       const water = baseEvent({ _id: "water", title: "Water Bill (Riverside)", startdate: "2026-08-20", interval: 2, setPos: 1, statementDate: "2026-08-20", amountCents: 19013 });

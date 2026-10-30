@@ -19,6 +19,45 @@ const fromRRuleDate = (date) => {
     return DateTime.local(year, month, day);
 };
 
+const FREQUENCIES = [RRule.DAILY, RRule.WEEKLY, RRule.MONTHLY, RRule.YEARLY];
+
+// adjustToWeekday moves a date back at most two days (Sun -> Fri), so look
+// that far past the window for occurrences that land inside it once moved.
+const ADJUST_LOOKAHEAD_DAYS = 3;
+
+/**
+ * Which days of the period an event falls on.
+ *
+ * `setPos` means two different things. With weekdays chosen on a monthly or
+ * yearly event it is "the Nth of those weekdays" (first Friday). Otherwise it
+ * is the day of the month. It is stored on every event (default 1), so it must
+ * not leak into daily/weekly rules, where bysetpos would keep only one
+ * occurrence per period (or none: Vetsource, weekly on WE with setPos 19,
+ * never appeared at all).
+ */
+const periodOptions = (evt, freq, weekdaysArray, needsWeekdayAdjustment) => {
+    const setPos = parseInt(evt.setPos, 10);
+    if (freq === RRule.DAILY || freq === RRule.WEEKLY) {
+        return {byweekday: weekdaysArray};
+    }
+
+    const start = DateTime.fromISO(evt.startdate);
+    const opts = freq === RRule.YEARLY ? {bymonth: [start.month]} : {};
+    if (weekdaysArray.length && !needsWeekdayAdjustment) {
+        return {...opts, byweekday: weekdaysArray, bysetpos: evt.lastDayOfMonth ? -1 : (setPos || 1)};
+    }
+    if (evt.lastDayOfMonth) {
+        return {...opts, bymonthday: [-1]};
+    }
+    const day = setPos || start.day;
+    if (day > 28) {
+        // The 31st in a 30-day month (or the 29th+ in February) clamps to the
+        // last day instead of skipping that month.
+        return {...opts, bymonthday: [28, 29, 30, 31].filter((d) => d <= day), bysetpos: -1};
+    }
+    return {...opts, bymonthday: [day]};
+};
+
 /**
  * Expand a set of budget events into their individual occurrences within a
  * date window.
@@ -34,6 +73,8 @@ const fromRRuleDate = (date) => {
  */
 const expandEvents = (events, start, end) => {
     const expanded = [];
+    const startISO = DateTime.fromISO(start).toISODate();
+    const endISO = DateTime.fromISO(end).toISODate();
     const betweenBegin = toRRuleDate(start);
     const betweenEnd = DateTime.fromISO(end, {zone: 'utc'}).endOf('day').toJSDate();
 
@@ -53,20 +94,24 @@ const expandEvents = (events, start, end) => {
         }
 
         let rule;
-        const needsWeekdayAdjustment = evt.frequency === RRule.MONTHLY && shouldAdjustToWeekday(evt);
+        const freq = Number(evt.frequency);
+        const needsWeekdayAdjustment = freq === RRule.MONTHLY && shouldAdjustToWeekday(evt);
 
         if (evt.recurring) {
+            // rrule loops forever on a bad freq or interval, and this runs
+            // synchronously on the server for /api/bills. Skip the event.
+            if (!FREQUENCIES.includes(freq)) {
+                console.warn(`[expandEvents] skipping ${evt._id}: bad frequency ${evt.frequency}`);
+                return;
+            }
             let ruleOpts = {
                 dtstart: toRRuleDate(evt.startdate),
                 wkst: RRule.SU,
-                interval: parseInt(evt.interval),
-                freq: evt.frequency,
-                byweekday: needsWeekdayAdjustment ? [] : weekdaysArray
+                interval: Math.max(1, parseInt(evt.interval, 10) || 1),
+                freq,
+                ...periodOptions(evt, freq, weekdaysArray, needsWeekdayAdjustment),
             };
 
-            if (evt.lastDayOfMonth === true || evt.setPos) {
-                ruleOpts.bysetpos = evt.lastDayOfMonth ? -1 : parseInt(evt.setPos);
-            }
             if (evt.until) {
                 ruleOpts.until = toRRuleDate(evt.until);
             }
@@ -81,15 +126,21 @@ const expandEvents = (events, start, end) => {
             });
         }
 
-        rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
+        const searchEnd = needsWeekdayAdjustment
+            ? DateTime.fromJSDate(betweenEnd, {zone: 'utc'}).plus({days: ADJUST_LOOKAHEAD_DAYS}).toJSDate()
+            : betweenEnd;
+        let idx = 0;
+        rule.between(betweenBegin, searchEnd, true).forEach((instance) => {
             const adjustedInstance = needsWeekdayAdjustment ? adjustToWeekday(instance) : instance;
             const displayTime = fromRRuleDate(adjustedInstance);
             const dueISO = displayTime.toISODate();
+            // Filter on the date actually reported, after any weekend shift.
+            if (dueISO < startISO || dueISO > endISO) return;
             expanded.push({
                 ...evt,
                 amountCents: getAmountCents(evt),
                 weekdays: weekdays,
-                listId: evt._id + idx,
+                listId: evt._id + idx++,
                 timestamp: displayTime.toMillis(),
                 dueISO,
                 // A skipped occurrence stays listed (so it can be un-skipped) but moves no money.

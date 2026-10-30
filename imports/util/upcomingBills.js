@@ -67,7 +67,10 @@ const buildUpcomingBills = (events, start, end, payments = []) => {
     const inferred = [];
     for (const evt of all) {
         const sd = evt.statementDate;
-        if (sd && sd >= start && sd <= end) stated.push(evt);
+        if (sd && sd >= start && sd <= end) {
+            // A skipped statement date is not due, same as a skipped occurrence.
+            if (!(evt.skipDates || []).includes(sd)) stated.push(evt);
+        }
         else inferred.push(evt);
     }
 

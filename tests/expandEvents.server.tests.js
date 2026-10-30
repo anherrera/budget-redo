@@ -179,6 +179,82 @@ if (Meteor.isServer) {
       );
     });
 
+    it("does not apply setPos to weekly rules", function () {
+      // Vetsource: weekly, every 3 weeks on WE, with a stray setPos of 19.
+      // bysetpos 19 on a one-day weekly set meant it never appeared.
+      const vetsource = baseEvent({
+        title: "Vetsource",
+        startdate: "2025-02-19",
+        frequency: RRule.WEEKLY,
+        interval: "3",
+        weekdays: "WE",
+        setPos: "19",
+      });
+
+      assert.deepStrictEqual(
+        dues([vetsource], "2026-11-01", "2026-12-31"),
+        ["11/11/2026", "12/02/2026", "12/23/2026"]
+      );
+    });
+
+    it("keeps every chosen weekday on a weekly rule", function () {
+      const mwf = baseEvent({
+        startdate: "2026-03-02",
+        frequency: RRule.WEEKLY,
+        weekdays: "MO,WE,FR",
+        setPos: 1,
+      });
+
+      assert.deepStrictEqual(
+        dues([mwf], "2026-03-02", "2026-03-08"),
+        ["03/02/2026", "03/04/2026", "03/06/2026"]
+      );
+    });
+
+    it("uses the start date's day when setPos is missing", function () {
+      const evt = baseEvent({ startdate: "2026-02-14", setPos: "" });
+      assert.deepStrictEqual(
+        dues([evt], "2026-03-01", "2026-04-30"),
+        ["03/14/2026", "04/14/2026"]
+      );
+    });
+
+    it("keeps the Nth weekday meaning of setPos on monthly rules", function () {
+      const firstFriday = baseEvent({ startdate: "2026-01-01", weekdays: "FR", setPos: 1 });
+      assert.deepStrictEqual(
+        dues([firstFriday], "2026-03-01", "2026-04-30"),
+        ["03/06/2026", "04/03/2026"]
+      );
+    });
+
+    it("clamps day 31 to the end of shorter months", function () {
+      const evt = baseEvent({ startdate: "2026-01-31", setPos: 31 });
+      assert.deepStrictEqual(
+        dues([evt], "2026-01-01", "2026-04-30"),
+        ["01/31/2026", "02/28/2026", "03/31/2026", "04/30/2026"]
+      );
+    });
+
+    it("reports weekend-adjusted dates in the window they land in", function () {
+      // Feb 1 2026 is a Sunday, so the payment moves to Fri Jan 30.
+      const evt = baseEvent({ startdate: "2025-12-01", setPos: 1, weekdaysOnly: true });
+      assert.deepStrictEqual(dues([evt], "2026-01-01", "2026-01-31"), ["01/01/2026", "01/30/2026"]);
+      // ...and Mar 1 2026 is also a Sunday, so February's window gets Fri Feb 27.
+      assert.deepStrictEqual(dues([evt], "2026-02-01", "2026-02-28"), ["02/27/2026"]);
+    });
+
+    it("skips events with an unusable interval or frequency instead of hanging", function () {
+      const bad = [
+        baseEvent({ _id: "a", interval: 0 }),
+        baseEvent({ _id: "b", interval: "abc" }),
+        baseEvent({ _id: "c", frequency: "1" }),
+        baseEvent({ _id: "d", frequency: 9 }),
+      ];
+      const got = expandEvents(bad, "2026-03-01", "2026-03-31").map((e) => e._id);
+      // Bad intervals fall back to 1; a string frequency is coerced; 9 is dropped.
+      assert.deepStrictEqual(got.sort(), ["a", "b", "c"]);
+    });
+
     it("reports dates without a time-of-day offset", function () {
       const [occ] = expandEvents([baseEvent({ startdate: "2026-12-01", recurring: false })],
         "2026-12-01", "2026-12-01");
