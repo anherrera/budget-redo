@@ -8,6 +8,17 @@ const {RRule, Weekday} = rrulePkg;
 import {adjustToWeekday, shouldAdjustToWeekday} from "./weekdayAdjustment.js";
 import {getAmountCents} from "./runningBalance.js";
 
+// Bills are calendar dates with no time of day. rrule does its arithmetic in
+// UTC, so feed it each date as UTC midnight and read results back in UTC.
+// Handing it local midnight instead let DST leak in: after the November
+// fall-back every occurrence landed at 23:00 the previous day (Cleaner due
+// Mon 11/23 showed as Sun 11/22, BofA's 14th as the 13th).
+const toRRuleDate = (iso) => DateTime.fromISO(iso, {zone: 'utc'}).startOf('day').toJSDate();
+const fromRRuleDate = (date) => {
+    const {year, month, day} = DateTime.fromJSDate(date, {zone: 'utc'});
+    return DateTime.local(year, month, day);
+};
+
 /**
  * Expand a set of budget events into their individual occurrences within a
  * date window.
@@ -23,8 +34,8 @@ import {getAmountCents} from "./runningBalance.js";
  */
 const expandEvents = (events, start, end) => {
     const expanded = [];
-    const betweenBegin = DateTime.fromISO(start).startOf('day').toJSDate();
-    const betweenEnd = DateTime.fromISO(end).endOf('day').toJSDate();
+    const betweenBegin = toRRuleDate(start);
+    const betweenEnd = DateTime.fromISO(end, {zone: 'utc'}).endOf('day').toJSDate();
 
     events.forEach(evt => {
         const skipDates = new Set(evt.skipDates || []);
@@ -46,7 +57,7 @@ const expandEvents = (events, start, end) => {
 
         if (evt.recurring) {
             let ruleOpts = {
-                dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
+                dtstart: toRRuleDate(evt.startdate),
                 wkst: RRule.SU,
                 interval: parseInt(evt.interval),
                 freq: evt.frequency,
@@ -57,7 +68,7 @@ const expandEvents = (events, start, end) => {
                 ruleOpts.bysetpos = evt.lastDayOfMonth ? -1 : parseInt(evt.setPos);
             }
             if (evt.until) {
-                ruleOpts.until = DateTime.fromISO(evt.until).toJSDate();
+                ruleOpts.until = toRRuleDate(evt.until);
             }
 
             rule = new RRule(ruleOpts);
@@ -65,14 +76,14 @@ const expandEvents = (events, start, end) => {
             rule = new RRule({
                 wkst: RRule.SU,
                 freq: RRule.DAILY,
-                dtstart: DateTime.fromISO(evt.startdate).startOf('day').toJSDate(),
+                dtstart: toRRuleDate(evt.startdate),
                 count: 1
             });
         }
 
         rule.between(betweenBegin, betweenEnd, true).forEach((instance, idx) => {
-            let adjustedInstance = needsWeekdayAdjustment ? adjustToWeekday(instance) : instance;
-            let displayTime = DateTime.fromJSDate(adjustedInstance).startOf('day');
+            const adjustedInstance = needsWeekdayAdjustment ? adjustToWeekday(instance) : instance;
+            const displayTime = fromRRuleDate(adjustedInstance);
             const dueISO = displayTime.toISODate();
             expanded.push({
                 ...evt,

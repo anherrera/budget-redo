@@ -2,11 +2,12 @@ import { DateTime } from 'luxon';
 
 /**
  * Adjusts a date to the previous Friday if it falls on a weekend
- * @param {Date} date - The date to adjust
+ * @param {Date} date - An rrule occurrence: a calendar date as UTC midnight
+ *                      (see expandEvents), so the weekday is read in UTC
  * @returns {Date} - The adjusted date
  */
 export const adjustToWeekday = (date) => {
-    const dt = DateTime.fromJSDate(date);
+    const dt = DateTime.fromJSDate(date, {zone: 'utc'});
     const dayOfWeek = dt.weekday; // 1=Monday, 7=Sunday
     
     if (dayOfWeek === 6) { // Saturday

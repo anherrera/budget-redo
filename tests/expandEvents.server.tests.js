@@ -146,5 +146,44 @@ if (Meteor.isServer) {
         [["2026-08-01", false], ["2026-09-01", true], ["2026-10-01", false]]
       );
     });
+
+    // Occurrences after the November DST fall-back used to land a day early
+    // (local midnight fed to rrule's UTC math). Only visible when the process
+    // runs in a DST zone, which the app container does (America/Chicago).
+    it("keeps a 28-day Monday bill on Mondays across the DST change", function () {
+      const cleaner = baseEvent({
+        title: "Cleaner",
+        startdate: "2026-09-28",
+        frequency: RRule.DAILY,
+        interval: 28,
+        weekdays: "MO",
+      });
+
+      assert.deepStrictEqual(
+        dues([cleaner], "2026-09-01", "2027-01-31"),
+        ["09/28/2026", "10/26/2026", "11/23/2026", "12/21/2026", "01/18/2027"]
+      );
+    });
+
+    it("keeps a monthly bill on its setPos day through winter", function () {
+      const card = baseEvent({
+        title: "BofA CC",
+        type: "cc_payment",
+        startdate: "2024-08-14",
+        setPos: 14,
+      });
+
+      assert.deepStrictEqual(
+        dues([card], "2026-10-01", "2027-03-31"),
+        ["10/14/2026", "11/14/2026", "12/14/2026", "01/14/2027", "02/14/2027", "03/14/2027"]
+      );
+    });
+
+    it("reports dates without a time-of-day offset", function () {
+      const [occ] = expandEvents([baseEvent({ startdate: "2026-12-01", recurring: false })],
+        "2026-12-01", "2026-12-01");
+      assert.strictEqual(occ.dueISO, "2026-12-01");
+      assert.strictEqual(occ.dueHuge.startsWith("Tue"), true);
+    });
   });
 }

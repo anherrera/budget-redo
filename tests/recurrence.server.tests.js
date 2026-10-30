@@ -67,21 +67,21 @@ if (Meteor.isServer) {
 
   describe("weekday adjustment utils", function () {
     it("adjusts Saturday to previous Friday", function () {
-      const sat = DateTime.fromISO("2026-02-28").toJSDate();
+      const sat = DateTime.fromISO("2026-02-28", { zone: "utc" }).toJSDate();
       const adjusted = adjustToWeekday(sat);
-      assert.strictEqual(DateTime.fromJSDate(adjusted).toISODate(), "2026-02-27");
+      assert.strictEqual(DateTime.fromJSDate(adjusted, { zone: "utc" }).toISODate(), "2026-02-27");
     });
 
     it("adjusts Sunday to previous Friday", function () {
-      const sun = DateTime.fromISO("2026-03-01").toJSDate();
+      const sun = DateTime.fromISO("2026-03-01", { zone: "utc" }).toJSDate();
       const adjusted = adjustToWeekday(sun);
-      assert.strictEqual(DateTime.fromJSDate(adjusted).toISODate(), "2026-02-27");
+      assert.strictEqual(DateTime.fromJSDate(adjusted, { zone: "utc" }).toISODate(), "2026-02-27");
     });
 
     it("does not adjust weekdays", function () {
-      const mon = DateTime.fromISO("2026-03-02").toJSDate();
+      const mon = DateTime.fromISO("2026-03-02", { zone: "utc" }).toJSDate();
       const adjusted = adjustToWeekday(mon);
-      assert.strictEqual(DateTime.fromJSDate(adjusted).toISODate(), "2026-03-02");
+      assert.strictEqual(DateTime.fromJSDate(adjusted, { zone: "utc" }).toISODate(), "2026-03-02");
     });
 
     it("shouldAdjustToWeekday returns true for weekdaysOnly monthly events", function () {
