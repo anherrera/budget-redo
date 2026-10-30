@@ -1,4 +1,5 @@
 import assert from "assert";
+import "./allowedUsers.server.tests";
 import "./eventsMethods.server.tests";
 import "./expandEvents.server.tests";
 import "./recurrence.server.tests";

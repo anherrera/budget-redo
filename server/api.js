@@ -3,13 +3,15 @@ import {Meteor} from 'meteor/meteor';
 import {EventsCollection} from '../imports/db/EventsCollection';
 import {PaymentsCollection, ensurePaymentIndexes} from '../imports/db/PaymentsCollection';
 import buildUpcomingBills from '../imports/util/upcomingBills';
+import {isAllowedUser} from '../imports/api/allowedUsers';
 
 // Read-only JSON for LAN consumers (Home Assistant, the openclaw dashboard).
 // Deliberately thin: everything interesting lives in buildUpcomingBills, which
 // is unit tested. This layer only parses a window and serialises.
 //
 // Unauthenticated, and therefore only appropriate because it is not exposed
-// beyond the LAN. Do not publish this port.
+// beyond the LAN: the public hostname sits behind Pangolin's login. Do not
+// publish this port.
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -20,6 +22,12 @@ const daysFromToday = (n) => {
     const d = new Date();
     d.setDate(d.getDate() + n);
     return localISO(d);
+};
+
+// Whose bills to serve: the allowlisted owner, never every user in the database.
+const billsUserIds = async () => {
+    const users = await Meteor.users.find({}, {fields: {services: 1}}).fetchAsync();
+    return users.filter((u) => isAllowedUser(u)).map((u) => u._id);
 };
 
 const sendJSON = (res, status, body) => {
@@ -55,6 +63,7 @@ handlers.use('/api/bills', async (req, res) => {
         }
 
         const events = await EventsCollection.find({
+            userId: {$in: await billsUserIds()},
             type: {$in: ['bill', 'cc_payment']},
         }).fetchAsync();
 
