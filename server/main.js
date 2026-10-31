@@ -4,6 +4,7 @@ import '/imports/api/eventsMethods';
 import '/imports/api/eventsPublications';
 import './accounts';
 import './api';
+import './writeApi';
 
 Meteor.startup(async () => {
     await ServiceConfiguration.configurations.upsertAsync(

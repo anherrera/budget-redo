@@ -5,6 +5,7 @@ import "./expandEvents.server.tests";
 import "./recurrence.server.tests";
 import "./runningBalance.server.tests";
 import "./upcomingBills.server.tests";
+import "./writeApi.server.tests";
 
 describe("budget-redo", function () {
   it("package.json has correct name", async function () {

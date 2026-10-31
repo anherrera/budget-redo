@@ -197,84 +197,110 @@ Meteor.startup(async () => {
     await migrateStatementDateToTopLevel();
 });
 
+// Fields a caller may set. The web form sends display-only extras (running,
+// due, ...) that standardizeEvent strips; the HTTP API rejects anything else.
+export const EVENT_FIELDS = [
+    'title', 'type', 'startdate', 'amount', 'amountCents', 'recurring', 'interval',
+    'frequency', 'setPos', 'lastDayOfMonth', 'weekdays', 'weekdaysOnly', 'until',
+    'autoPay', 'statementDate', 'variableAmount',
+];
+
+// standardizeEvent reads dollars from `amount`; API callers may send cents.
+const withAmount = (evt) =>
+    evt.amount === undefined && Number.isInteger(evt.amountCents)
+        ? {...evt, amount: evt.amountCents / 100}
+        : evt;
+
+// Errors keep the messages the web UI has always shown.
+const ownedEvent = async (userId, eventId, error = 'Not authorized.') => {
+    const event = await EventsCollection.findOneAsync({_id: eventId, userId});
+    if (!event) throw new Meteor.Error(error);
+    return event;
+};
+
+// The operations behind both the Meteor methods (web UI) and /api/events, so
+// there is one set of validation rules whichever way an edit arrives.
+export const insertEvent = async (userId, evt) => {
+    const input = withAmount(evt);
+    validateEventInput(input);
+    return EventsCollection.insertAsync({...standardizeEvent(input, userId)});
+};
+
+export const editEvent = async (userId, evt) => {
+    check(evt._id, String);
+    const input = withAmount(evt);
+    validateEventInput(input);
+    await ownedEvent(userId, evt._id, 'Not found.');
+    return EventsCollection.updateAsync(evt._id, {
+        $set: {...standardizeEvent(input, userId)},
+        $unset: {amount: ''},
+    });
+};
+
+/** Partial update: merge onto the stored event, then validate the result whole. */
+export const patchEvent = async (userId, eventId, patch) => {
+    const {amount, ...stored} = await ownedEvent(userId, eventId, 'Not found.');
+    const merged = {...stored, ...patch};
+    // One source for the amount: whatever the patch sent, else what is stored.
+    merged.amount = patch.amount !== undefined ? patch.amount
+        : (Number.isInteger(merged.amountCents) ? merged.amountCents : 0) / 100;
+    await editEvent(userId, merged);
+    return EventsCollection.findOneAsync(eventId);
+};
+
+export const removeEvent = async (userId, eventId) => {
+    check(eventId, String);
+    await ownedEvent(userId, eventId);
+    await EventsCollection.removeAsync(eventId);
+};
+
+/** Mark one occurrence skipped (true) or not (false). Returns the new state. */
+export const setSkip = async (userId, eventId, date, skip) => {
+    check(eventId, String);
+    check(date, String);
+    if (!isISODate(date)) {
+        throw new Meteor.Error('validation-error', 'Date must be in YYYY-MM-DD format.');
+    }
+    const event = await ownedEvent(userId, eventId);
+    // Card payments are owed regardless.
+    if (skip && event.type === 'cc_payment') {
+        throw new Meteor.Error('validation-error', 'Credit card payments cannot be skipped.');
+    }
+    await EventsCollection.updateAsync(eventId, skip
+        ? {$addToSet: {skipDates: date}}
+        : {$pull: {skipDates: date}});
+    return skip;
+};
+
 Meteor.methods({
     async 'events.insertAsync'(evt) {
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
         }
-
-        validateEventInput(evt);
-        await EventsCollection.insertAsync({...standardizeEvent(evt, this.userId)})
+        await insertEvent(this.userId, evt);
     },
 
     async 'events.edit'(evt) {
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
         }
-        check(evt._id, String);
-        validateEventInput(evt);
-
-        const foundEvent = await EventsCollection.findOneAsync({ _id: evt._id, userId: this.userId });
-
-        if (!foundEvent) {
-            throw new Meteor.Error('Not found.');
-        }
-
-        let evtUpdate = standardizeEvent(evt, this.userId);
-
-        // slow, see difference in object and update individual keys. or send only keys that need updating from front ned
-        return await EventsCollection.updateAsync(evt._id, {
-            $set: {...evtUpdate},
-            $unset: { amount: '' }
-        })
-
+        return editEvent(this.userId, evt);
     },
 
     async 'events.removeAsync'(eventId) {
-        check(eventId, String);
-
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
         }
-
-        const event = await EventsCollection.findOneAsync({_id: eventId, userId: this.userId});
-
-        if (!event) {
-            throw new Meteor.Error('Not authorized.');
-        }
-
-        await EventsCollection.removeAsync(eventId);
+        await removeEvent(this.userId, eventId);
     },
 
     async 'events.toggleSkip'(eventId, date) {
         check(eventId, String);
-        check(date, String);
-
         if (!this.userId) {
             throw new Meteor.Error('Not authorized.');
         }
-        if (!isISODate(date)) {
-            throw new Meteor.Error('validation-error', 'Date must be in YYYY-MM-DD format.');
-        }
-
-        const event = await EventsCollection.findOneAsync({_id: eventId, userId: this.userId});
-
-        if (!event) {
-            throw new Meteor.Error('Not authorized.');
-        }
-
-        // Card payments are owed regardless, and their statementDate path in
-        // /api/bills ignores skipDates anyway.
-        if (event.type === 'cc_payment') {
-            throw new Meteor.Error('validation-error', 'Credit card payments cannot be skipped.');
-        }
-
-        const skipped = (event.skipDates || []).includes(date);
-        await EventsCollection.updateAsync(eventId, skipped
-            ? { $pull: { skipDates: date } }
-            : { $addToSet: { skipDates: date } }
-        );
-        return !skipped;
+        const event = await ownedEvent(this.userId, eventId);
+        return setSkip(this.userId, eventId, date, !(event.skipDates || []).includes(date));
     },
 
     async 'events.updateStatementDate'(eventId, statementDate) {
