@@ -17,7 +17,8 @@ import {
     Grid,
     TextField,
     ThemeProvider,
-    Typography
+    Typography,
+    useMediaQuery
 } from "@mui/material";
 import {
     CalendarMonth,
@@ -28,7 +29,7 @@ import {
 import {DataGrid} from "@mui/x-data-grid";
 import EditEventBtnForm from "./event/EditEventBtnForm";
 
-import columns from '../util/columnDef';
+import columns, {SMALL_SCREEN_HIDDEN} from '../util/columnDef';
 import defaultEvent from '../util/defaultEvent';
 import getCurrentEvents from "../util/filterEvents";
 import { deepPurple, teal } from '@mui/material/colors';
@@ -273,6 +274,13 @@ export const App = () => {
 
     const theme = useMemo(() => getTheme(darkMode), [darkMode]);
 
+    // Below md the low-value columns are hidden; the column menu can still toggle them.
+    const isSmall = useMediaQuery(theme.breakpoints.down('md'));
+    const [columnVisibility, setColumnVisibility] = useState({});
+    useEffect(() => {
+        setColumnVisibility(Object.fromEntries(SMALL_SCREEN_HIDDEN.map((field) => [field, !isSmall])));
+    }, [isSmall]);
+
     const rowStyle = (record) => {
         if (record.row.skipped) return 'skipped';
         const running = parseFloat(record.row.running);
@@ -309,12 +317,12 @@ export const App = () => {
                     <Grid container spacing={2}>
                     {loggingIn ? null : user ? (
                         <>
-                            <Grid item md={12}>
+                            <Grid item xs={12}>
                                 <Header user={user} logout={logout} darkMode={darkMode} toggleDarkMode={toggleDarkMode}/>
                             </Grid>
                             <Grid item md={9} xs={12}>
                                 <Grid container spacing={2}>
-                                    <Grid item md={12}>
+                                    <Grid item xs={12}>
                                         <Card>
                                             <AccentBar gradient={theme.palette.gradient.secondary} />
                                             <CardContent sx={{ py: 2 }}>
@@ -330,7 +338,7 @@ export const App = () => {
                                             </CardContent>
                                         </Card>
                                     </Grid>
-                                    <Grid item md={12}>
+                                    <Grid item xs={12}>
                                         <Card>
                                             <AccentBar gradient={theme.palette.gradient.primary} />
                                             <CardContent sx={{ p: 0 }}>
@@ -361,6 +369,8 @@ export const App = () => {
                                                 <DataGrid
                                                     getRowClassName={rowStyle}
                                                     columns={columns}
+                                                    columnVisibilityModel={columnVisibility}
+                                                    onColumnVisibilityModelChange={setColumnVisibility}
                                                     rows={evtsFlat}
                                                     initialState={{
                                                         pagination: {

@@ -15,6 +15,7 @@ const columns = [
     {
         field: 'title',
         flex: 2,
+        minWidth: 120,
         headerName: 'Title',
         editable: false,
         renderCell: (title) => <Title evt={title.row} />
@@ -22,6 +23,7 @@ const columns = [
     {
         field: 'type',
         flex: 1,
+        minWidth: 110,
         headerName: "Type",
         editable: false,
         renderCell: (params) => {
@@ -37,6 +39,7 @@ const columns = [
     {
         field: 'timestamp',
         flex: 1,
+        minWidth: 115,
         headerName: 'Due',
         type: 'number',
         align: 'left',
@@ -48,6 +51,7 @@ const columns = [
     {
         field: 'amountCents',
         flex: 1,
+        minWidth: 105,
         headerName: 'Amount',
         editable: false,
         align: "right",
@@ -75,6 +79,7 @@ const columns = [
     {
         field: 'running',
         flex: 1,
+        minWidth: 110,
         headerName: "Running",
         editable: false,
         align: "right",
@@ -89,11 +94,15 @@ const columns = [
     {
         field: 'actions',
         flex: 1.5,
+        minWidth: 130,
         headerName: 'Actions',
         sortable: false,
         editable: false,
         renderCell: (actions) => <Edit evt={actions.row} onDeleteClick={deleteEvent}/>
     }
 ];
+
+// Hidden below the md breakpoint, where the grid has no room for them.
+export const SMALL_SCREEN_HIDDEN = ['type', 'running'];
 
 export default columns;
