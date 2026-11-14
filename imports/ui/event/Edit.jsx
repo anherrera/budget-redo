@@ -23,13 +23,13 @@ const SkipBtn = ({ evt }) => (
     </Tooltip>
 );
 
-export const Edit = ({ evt, onDeleteClick}) => {
+export const Edit = ({ evt, onDeleteClick, compact }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     const isFirst = evt.listId === evt._id + '0';
 
     return (
-        <Box sx={{width: '100%', height: '100%', display: "flex", gap: '8px', justifyContent: 'center', alignItems: 'center'}}>
+        <Box sx={{width: '100%', height: '100%', display: "flex", gap: compact ? '4px' : '8px', justifyContent: compact ? 'flex-end' : 'center', alignItems: 'center'}}>
             {evt.recurring && evt.type !== 'cc_payment' && <SkipBtn evt={evt} />}
             {isFirst && <>
             <EditEventBtnForm event={evt} />

@@ -2,6 +2,7 @@ import {Meteor} from 'meteor/meteor';
 import {ServiceConfiguration} from 'meteor/service-configuration';
 import '/imports/api/eventsMethods';
 import '/imports/api/eventsPublications';
+import '/imports/api/userMethods';
 import './accounts';
 import './api';
 import './writeApi';

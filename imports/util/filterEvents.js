@@ -1,3 +1,4 @@
+import {Meteor} from "meteor/meteor";
 import {EventsCollection} from "../db/EventsCollection";
 import {applyRunningBalance} from "./runningBalance";
 import expandEvents from "./expandEvents";

@@ -2,21 +2,25 @@ import React from 'react';
 import { Box, Chip } from '@mui/material';
 import { CreditCard } from '@mui/icons-material';
 
-export const Title = ({ evt }) => {
+// The title gives way before the icon and the Auto chip do.
+const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 };
+
+export const Title = ({ evt, hideAuto }) => {
     const titleElement = evt.autoPay === true ? (
-        <span>{evt.title}</span>
-    ) : (<strong>{evt.title}</strong>);
+        <span style={ellipsis}>{evt.title}</span>
+    ) : (<strong style={ellipsis}>{evt.title}</strong>);
 
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {evt.type === 'cc_payment' && <CreditCard fontSize="small" sx={{ color: 'warning.main' }} />}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, maxWidth: '100%' }}>
+            {evt.type === 'cc_payment' && <CreditCard fontSize="small" sx={{ color: 'warning.main', flexShrink: 0 }} />}
             {titleElement}
-            {evt.autoPay && (
+            {evt.autoPay && !hideAuto && (
                 <Chip
                     label="Auto"
                     size="small"
                     variant="filled"
                     sx={{
+                        flexShrink: 0,
                         height: 18,
                         fontSize: '0.65rem',
                         fontWeight: 600,

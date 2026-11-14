@@ -7,7 +7,7 @@ export const Header = ({ user, logout, darkMode, toggleDarkMode }) => {
         <Box sx={{ flexGrow: 1, mb: 1.5 }}>
             <AppBar position="static" elevation={0} sx={{ borderRadius: '0 0 16px 16px' }}>
                 <Toolbar sx={{ minHeight: '56px !important', py: 0.5 }}>
-                    <Typography variant="h6" component="div" sx={{
+                    <Typography variant="h6" component="div" noWrap sx={{
                         flexGrow: 1,
                         fontWeight: 700,
                         background: 'linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.7) 100%)',
@@ -45,6 +45,7 @@ export const Header = ({ user, logout, darkMode, toggleDarkMode }) => {
                                         color: 'white',
                                         border: '1px solid rgba(255,255,255,0.15)',
                                         '& .MuiChip-avatar': { color: 'white' },
+                                        display: { xs: 'none', sm: 'inline-flex' },
                                     }}
                                 />
                                 <Button
@@ -52,6 +53,8 @@ export const Header = ({ user, logout, darkMode, toggleDarkMode }) => {
                                     variant="text"
                                     startIcon={<LogoutOutlined />}
                                     sx={{
+                                        display: { xs: 'none', sm: 'inline-flex' },
+                                        whiteSpace: 'nowrap',
                                         color: 'rgba(255,255,255,0.85)',
                                         fontWeight: 500,
                                         '&:hover': {
@@ -62,6 +65,15 @@ export const Header = ({ user, logout, darkMode, toggleDarkMode }) => {
                                 >
                                     Sign Out
                                 </Button>
+                                <Tooltip title="Sign out">
+                                    <IconButton
+                                        onClick={logout}
+                                        aria-label="Sign out"
+                                        sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'white' }}
+                                    >
+                                        <LogoutOutlined />
+                                    </IconButton>
+                                </Tooltip>
                             </>
                             ) : (
                             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255, 255, 255, 0.5)' }}>

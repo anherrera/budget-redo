@@ -165,7 +165,7 @@ const EditEventButton = ({event}) => {
                         </IconButton>
                     </Tooltip>
                 ) : (
-                    <Button variant="contained" color="secondary" onClick={addEvent} endIcon={<Add />}>Add New Item</Button>
+                    <Button variant="contained" color="secondary" onClick={addEvent} endIcon={<Add />} sx={{ whiteSpace: 'nowrap' }}>Add Item</Button>
                 )}
             </Box>
 
@@ -202,7 +202,8 @@ const EditEventButton = ({event}) => {
                             </Select>
                         </FormControl>
                         <TextField disabled={submitting} name="amount" value={formData.amount} type="number"
-                                   onChange={handleChange} label="Amount" required/>
+                                   onChange={handleChange} label="Amount" required
+                                   inputProps={{ step: '0.01', min: 0, inputMode: 'decimal' }}/>
                         <TextField disabled={submitting} variant="filled"
                                    label={formData.recurring ? 'Starting on' : 'Date'} type="date" name="startdate" value={formData.startdate}
                                    onChange={handleChange} required InputLabelProps={{ shrink: true }}/>
@@ -325,11 +326,22 @@ const EditEventButton = ({event}) => {
                         </Collapse>
 
                         <Button
-                            fullWidth
+                            className="half"
+                            variant="outlined"
+                            color="inherit"
+                            disabled={submitting}
+                            onClick={toggleEditing}
+                            sx={{ flexBasis: '30%', py: 1.5 }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
                             variant="contained"
                             type="submit"
                             disabled={submitting}
                             sx={{
+                                flexBasis: '66%',
+                                flexGrow: 1,
                                 backgroundImage: (theme) => theme.palette.gradient.hero,
                                 color: 'white',
                                 py: 1.5,
